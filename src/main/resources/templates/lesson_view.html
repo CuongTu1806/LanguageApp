@@ -1,0 +1,68 @@
+<!-- src/main/resources/templates/lesson_view.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Bài học</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f5f5f5; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; }
+        .btn { padding: 6px 12px; border-radius: 4px; border: 1px solid #333; background: #f5f5f5; cursor: pointer; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <h2 th:text="'Bài ' + ${lessonNo} + ' - ' + ${lang} + ' - ' + ${level}"></h2>
+    <a class="btn"
+       th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=1|}">
+        Kiểm tra (word + pronunciation → meaning)
+    </a>
+
+    <a class="btn"
+       th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=2|}">
+        Kiểm tra (word → meaning)
+    </a>
+
+    <a class="btn"
+       th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=3|}">
+        Kiểm tra (meaning → word)
+    </a>
+    <a class="btn"
+       th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz/practice-wrong?mode=1|}">
+        Luyện lại các từ sai
+    </a>
+
+    <a class="btn" th:href="@{|/courses/${lang}/${level}/lessons|}">← Danh sách bài</a>
+</div>
+
+
+<table>
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Từ</th>
+        <th>Phiên âm</th>
+        <th>Loại từ</th>
+        <th>Nghĩa</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="w, stat : ${words}">
+        <td th:text="${stat.index + 1}"></td>
+        <td th:text="${w.word}"></td>
+        <td th:text="${w.pronunciation}"></td>
+        <td th:text="${w.pos}"></td>
+        <td th:text="${w.meaning}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- Sau này bạn thêm nút "Kiểm tra bài này" ở đây -->
+<!-- <a class="btn" th:href="@{|/quiz/lesson/${lang}/${level}/${lessonNo}|}">Kiểm tra bài này</a> -->
+
+</body>
+</html>

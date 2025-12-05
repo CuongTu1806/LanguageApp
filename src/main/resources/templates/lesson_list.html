@@ -1,0 +1,59 @@
+<!-- src/main/resources/templates/lesson_list.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Danh sách bài học</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .lessons { margin-top: 20px; }
+        .lesson-item { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px; }
+        .create-lesson { margin-top: 30px; padding: 15px; border: 1px dashed #999; border-radius: 8px; }
+        .btn { padding: 6px 12px; border-radius: 4px; border: 1px solid #333; background: #f5f5f5; cursor: pointer; }
+        .btn-primary { background: #4caf50; color: white; border-color: #4caf50; }
+        .message { margin-top: 10px; color: #0066cc; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h2 th:text="'Khóa học: ' + ${lang} + ' - ' + ${level}"></h2>
+    </div>
+</div>
+
+<div class="message" th:if="${message != null}" th:text="${message}"></div>
+
+<div class="lessons">
+    <h3>Các bài đã có</h3>
+    <div th:if="${#lists.isEmpty(lessons)}">
+        Chưa có bài học nào. Hãy ấn dấu <b>+</b> để tạo bài đầu tiên.
+    </div>
+
+    <div th:each="ls : ${lessons}" class="lesson-item">
+        <span th:text="'Bài ' + ${ls}"></span>
+        &nbsp;–&nbsp;
+        <a class="btn" th:href="@{|/courses/${lang}/${level}/lessons/${ls}|}">
+            Vào học
+        </a>
+        &nbsp;
+        <a class="btn"
+           th:href="@{|/courses/${lang}/${level}/lessons/${ls}/quiz?mode=1|}">
+            Kiểm tra
+        </a>
+    </div>
+
+</div>
+
+<div class="create-lesson">
+    <h3>Tạo bài học mới</h3>
+    <form th:action="@{|/courses/${lang}/${level}/lessons/new|}" method="post">
+        <label>Số từ muốn học:</label>
+        <input type="number" name="size" value="15" min="5" max="100"/>
+        <button type="submit" class="btn btn-primary">+ Tạo bài</button>
+    </form>
+</div>
+
+</body>
+</html>

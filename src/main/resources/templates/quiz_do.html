@@ -1,0 +1,68 @@
+<!-- src/main/resources/templates/quiz_do.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Làm quiz</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; }
+        .question-card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+        .question-title { font-weight: bold; margin-bottom: 8px; }
+        .option { margin-bottom: 4px; }
+        .btn { padding: 6px 12px; border-radius: 4px; border: 1px solid #333;
+            background: #4caf50; color: #fff; cursor: pointer; }
+        .btn-back { background: #f5f5f5; color: #333; }
+        .mode-label { font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div>
+        <h2 th:text="'Quiz - Bài ' + ${lessonNo} + ' (' + ${lang} + ' - ' + ${level} + ')'"></h2>
+        <div class="mode-label">
+            Kiểu:
+            <span th:switch="${mode}">
+                <span th:case="1">word + pronunciation → meaning</span>
+                <span th:case="2">word → meaning</span>
+                <span th:case="3">meaning → word</span>
+                <span th:case="*">word + pronunciation → meaning</span>
+            </span>
+        </div>
+    </div>
+    <div th:if="${practiceWrong}">
+        <strong>Chế độ luyện từ sai</strong>
+    </div>
+
+    <a class="btn btn-back" th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}|}">← Quay lại bài</a>
+</div>
+
+<form th:action="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz/submit|}"
+      method="post">
+
+    <div th:each="q, stat : ${questions}" class="question-card">
+        <div class="question-title">
+            Câu <span th:text="${stat.index + 1}"></span>:
+            <span th:text="${q.questionText}"></span>
+        </div>
+
+        <div th:each="opt : ${q.options}" class="option">
+            <label>
+                <!-- TÊN INPUT: answer0, answer1, answer2,... -->
+                <input type="radio"
+                       th:name="${'answer' + stat.index}"
+                       th:value="${opt}"
+                       required/>
+                <span th:text="${opt}"></span>
+            </label>
+        </div>
+    </div>
+
+    <button type="submit" class="btn">Nộp bài</button>
+</form>
+
+
+
+</body>
+</html>

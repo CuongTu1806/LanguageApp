@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Chọn khóa học</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .field {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    select, input[type="radio"] {
+      font-size: 14px;
+    }
+    .radio-group {
+      display: flex;
+      gap: 16px;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: #4caf50;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Chọn khóa học</h1>
+
+<div class="card">
+  <form th:action="@{/courses/select}" method="post">
+
+    <!-- Chọn ngôn ngữ -->
+    <div class="field">
+      <label>Ngôn ngữ</label>
+      <div class="radio-group">
+        <label>
+          <input type="radio" name="language" value="cn"
+                 th:checked="${selectedLang == 'cn'}"/>
+          Tiếng Trung
+        </label>
+        <label>
+          <input type="radio" name="language" value="en"
+                 th:checked="${selectedLang == 'en'}"/>
+          Tiếng Anh
+        </label>
+      </div>
+    </div>
+
+    <!-- Chọn trình độ -->
+    <div class="field">
+      <label>Trình độ</label>
+      <select name="level">
+        <!-- Với tiếng Trung bạn đang dùng A1, A2, có thể đổi thành HSK1/2 sau -->
+        <option value="A1"
+                th:selected="${selectedLevel == 'A1'}">A1</option>
+        <option value="A2"
+                th:selected="${selectedLevel == 'A2'}">A2</option>
+        <!-- Sau này thêm B1, B2, HSK1, HSK2,... -->
+      </select>
+    </div>
+
+    <button type="submit" class="btn">Vào học</button>
+  </form>
+</div>
+
+</body>
+</html>

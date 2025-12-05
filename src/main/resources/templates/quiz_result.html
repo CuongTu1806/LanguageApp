@@ -1,0 +1,56 @@
+<!-- src/main/resources/templates/quiz_result.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Kết quả quiz</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; }
+        .btn { padding: 6px 12px; border-radius: 4px; border: 1px solid #333;
+            background: #f5f5f5; cursor: pointer; text-decoration: none; color: #333; }
+        .score { font-size: 18px; margin-top: 10px; margin-bottom: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 6px; font-size: 14px; }
+        th { background: #f5f5f5; }
+        .correct { color: #2e7d32; font-weight: bold; }
+        .wrong { color: #c62828; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <h2 th:text="'Kết quả quiz - Bài ' + ${lessonNo} + ' (' + ${lang} + ' - ' + ${level} + ')'"></h2>
+    <a class="btn" th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}|}">← Quay lại bài</a>
+</div>
+
+<div class="score">
+    Điểm: <span th:text="${score}"></span> / <span th:text="${total}"></span>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Câu hỏi</th>
+        <th>Đáp án đúng</th>
+        <th>Bạn chọn</th>
+        <th>Kết quả</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="q, stat : ${questions}">
+        <td th:text="${stat.index + 1}"></td>
+        <td th:text="${q.questionText}"></td>
+        <td th:text="${q.correctAnswer}"></td>
+        <td th:text="${answers[stat.index]}"></td>
+        <td>
+            <span th:if="${q.correctAnswer == answers[stat.index]}" class="correct">Đúng</span>
+            <span th:if="${q.correctAnswer != answers[stat.index]}" class="wrong">Sai</span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
