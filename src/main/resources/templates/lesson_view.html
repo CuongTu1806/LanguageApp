@@ -5,49 +5,441 @@
     <title>Bài học</title>
     <meta charset="UTF-8">
     <style>
-        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background: #f5f5f5; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; }
-        .btn { padding: 6px 12px; border-radius: 4px; border: 1px solid #333; background: #f5f5f5; cursor: pointer; text-decoration: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; height: 100vh; overflow: hidden; }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+        }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #2c3e50;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .top-bar h2 {
+            font-size: 1.3em;
+            font-weight: 500;
+        }
+        
+        .top-bar-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 5px;
+            border: none;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-back {
+            background: #95a5a6;
+        }
+        
+        .btn-back:hover {
+            background: #7f8c8d;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* Cột trái: Danh sách từ */
+        .word-list {
+            width: 350px;
+            border-right: 2px solid #ddd;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .word-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .word-item:hover {
+            background: #e8f4f8;
+        }
+        
+        .word-item.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .word-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .word-hanzi {
+            font-size: 1.4em;
+            font-weight: bold;
+        }
+        
+        .word-stats {
+            font-size: 0.75em;
+            opacity: 0.7;
+        }
+        
+        .word-item.active .word-stats {
+            opacity: 0.9;
+        }
+        
+        .word-pinyin {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        .word-item.active .word-pinyin {
+            color: rgba(255,255,255,0.9);
+        }
+        
+        /* Cột phải: Chi tiết từ */
+        .word-detail {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 40px;
+            background: white;
+        }
+        
+        .word-detail-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            font-size: 1.1em;
+        }
+        
+        .word-detail-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .detail-main {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .detail-hanzi {
+            font-size: 3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .detail-pinyin {
+            font-size: 1.3em;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+        
+        .detail-meaning {
+            font-size: 1.2em;
+            color: #34495e;
+            line-height: 1.6;
+        }
+        
+        .detail-section {
+            margin-bottom: 30px;
+        }
+        
+        .detail-section-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .detail-example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .example-cn {
+            font-size: 1.1em;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .example-vi {
+            font-size: 1em;
+            color: #7f8c8d;
+        }
+        
+        .detail-image {
+            text-align: center;
+        }
+        
+        .detail-image img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .detail-stats {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            text-align: center;
+        }
+        
+        .stat-item {
+            padding: 10px;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
     </style>
 </head>
 <body>
 
-<div class="top-bar">
-    <h2 th:text="'Bài ' + ${lessonNo} + ' - ' + ${lang} + ' - ' + ${level}"></h2>
-    <a class="btn"
-       th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=1|}">
-        Kiểm tra (word + pronunciation → meaning)
-    </a>
+<div class="container">
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <h2 th:text="'Bài ' + ${lessonNo} + ' - ' + ${lang} + ' - ' + ${level}"></h2>
+        <div class="top-bar-buttons">
+            <a class="btn"
+               th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=1|}">
+                📝 Kiểm tra Mode 1
+            </a>
+            <a class="btn"
+               th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=2|}">
+                📝 Kiểm tra Mode 2
+            </a>
+            <a class="btn"
+               th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=3|}">
+                📝 Kiểm tra Mode 3
+            </a>
+            <a class="btn"
+               th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz/practice-wrong?mode=1|}">
+                🔄 Luyện lại từ sai
+            </a>
+            <a class="btn btn-back" th:href="@{|/courses/${lang}/${level}/lessons|}">
+                ← Danh sách bài
+            </a>
+        </div>
+    </div>
 
-    <a class="btn"
-       th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=2|}">
-        Kiểm tra (word → meaning)
-    </a>
+    <!-- Main Content: 2 cột -->
+    <div class="main-content">
+        <!-- Cột trái: Danh sách từ -->
+        <div class="word-list">
+            <!-- Debug: Hiển thị số lượng từ -->
+            <div style="padding: 10px; background: #fff3cd; border-bottom: 2px solid #ffc107;" th:if="${#lists.isEmpty(words)}">
+                ⚠️ Không có từ vựng nào trong bài này!
+            </div>
+            <div style="padding: 10px; background: #d4edda; border-bottom: 2px solid #28a745;" th:unless="${#lists.isEmpty(words)}">
+                ✅ Tìm thấy <span th:text="${#lists.size(words)}"></span> từ vựng
+            </div>
+            
+            <div class="word-item" 
+                 th:each="w, stat : ${words}" 
+                 th:attr="data-vocab-id=${w.id}"
+                 th:classappend="${stat.index == 0} ? 'active' : ''">
+                <div class="word-item-header">
+                    <span class="word-hanzi" th:text="${w.word}"></span>
+                    <span class="word-stats" 
+                          th:with="s=${statsMap[w.id]}"
+                          th:text="${s != null && s.totalAttempts > 0 
+                                     ? (s.wrongCount + '/' + s.totalAttempts)
+                                     : '0/0'}">
+                    </span>
+                </div>
+                <div class="word-pinyin" th:text="${w.pronunciation}"></div>
+            </div>
+        </div>
 
-    <a class="btn"
-       th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=3|}">
-        Kiểm tra (meaning → word)
-    </a>
-    <a class="btn"
-       th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz/practice-wrong?mode=1|}">
-        Luyện lại các từ sai
-    </a>
+        <!-- Cột phải: Chi tiết từ -->
+        <div class="word-detail">
+            <div class="word-detail-empty" id="emptyState">
+                <p>👈 Chọn một từ để xem chi tiết</p>
+            </div>
+            
+            <div class="word-detail-content" id="detailContent" style="display: none;">
+                <!-- Main info -->
+                <div class="detail-main">
+                    <div class="detail-hanzi" id="detailHanzi">-</div>
+                    <div class="detail-pinyin" id="detailPinyin">-</div>
+                    <div class="detail-meaning" id="detailMeaning">-</div>
+                </div>
 
-    <a class="btn" th:href="@{|/courses/${lang}/${level}/lessons|}">← Danh sách bài</a>
+                <!-- Ví dụ -->
+                <div class="detail-section" id="exampleSection" style="display: none;">
+                    <div class="detail-section-title">📖 Ví dụ</div>
+                    <div class="detail-example">
+                        <div class="example-cn" id="exampleCn">-</div>
+                        <div class="example-vi" id="exampleVi">-</div>
+                    </div>
+                </div>
+
+                <!-- Hình ảnh -->
+                <div class="detail-section" id="imageSection" style="display: none;">
+                    <div class="detail-section-title">🖼️ Hình minh họa</div>
+                    <div class="detail-image">
+                        <img id="detailImage" src="" alt="Vocabulary image">
+                    </div>
+                </div>
+
+                <!-- Thống kê -->
+                <div class="detail-section">
+                    <div class="detail-section-title">📊 Thống kê học tập</div>
+                    <div class="detail-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="statTotal">0</div>
+                            <div class="stat-label">Lần kiểm tra</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="statWrong">0</div>
+                            <div class="stat-label">Lần sai</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="statRate">0%</div>
+                            <div class="stat-label">Tỉ lệ sai</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<script th:inline="javascript">
+    // Dữ liệu từ server
+    const words = /*[[${words}]]*/ [];
+    const statsMap = /*[[${statsMap}]]*/ {};
+    
+    // Hiển thị từ đầu tiên khi load trang
+    if (words.length > 0) {
+        showWordDetail(words[0].id);
+    }
+    
+    // Xử lý click vào từ trong danh sách
+    document.querySelectorAll('.word-item').forEach(item => {
+        item.addEventListener('click', function() {
+            // Remove active class từ tất cả
+            document.querySelectorAll('.word-item').forEach(i => i.classList.remove('active'));
+            
+            // Add active class cho item được click
+            this.classList.add('active');
+            
+            // Lấy vocab ID và hiển thị chi tiết
+            const vocabId = this.getAttribute('data-vocab-id');
+            showWordDetail(vocabId);
+        });
+    });
+    
+    function showWordDetail(vocabId) {
+        // Tìm word trong danh sách
+        const word = words.find(w => w.id == vocabId);
+        if (!word) return;
+        
+        // Lấy stats
+        const stats = statsMap[vocabId];
+        
+        // Ẩn empty state, hiện detail content
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('detailContent').style.display = 'block';
+        
+        // Cập nhật thông tin chính
+        document.getElementById('detailHanzi').textContent = word.word;
+        document.getElementById('detailPinyin').textContent = word.pronunciation || '-';
+        document.getElementById('detailMeaning').textContent = word.meaning || '-';
+        
+        // Cập nhật ví dụ
+        if (word.exampleSrc && word.exampleVi) {
+            document.getElementById('exampleCn').textContent = word.exampleSrc;
+            document.getElementById('exampleVi').textContent = word.exampleVi;
+            document.getElementById('exampleSection').style.display = 'block';
+        } else {
+            document.getElementById('exampleSection').style.display = 'none';
+        }
+        
+        // Cập nhật hình ảnh
+        if (word.imagePath) {
+            document.getElementById('detailImage').src = word.imagePath;
+            document.getElementById('imageSection').style.display = 'block';
+        } else {
+            document.getElementById('imageSection').style.display = 'none';
+        }
+        
+        // Cập nhật thống kê
+        const totalAttempts = stats ? stats.totalAttempts : 0;
+        const wrongCount = stats ? stats.wrongCount : 0;
+        const errorRate = totalAttempts > 0 ? ((wrongCount / totalAttempts) * 100).toFixed(1) : 0;
+        
+        document.getElementById('statTotal').textContent = totalAttempts;
+        document.getElementById('statWrong').textContent = wrongCount;
+        document.getElementById('statRate').textContent = errorRate + '%';
+    }
+</script>
 
-<table>
-    <thead>
-    <tr>
-        <th>#</th>
-        <th>Từ</th>
-        <th>Phiên âm</th>
-        <th>Loại từ</th>
-        <th>Nghĩa</th>
+</body>
+</html>
+        <th>Số lần kiểm tra</th>
+        <th>Số lần sai</th>
+        <th>Tỉ lệ sai</th>
     </tr>
     </thead>
     <tbody>
@@ -55,11 +447,32 @@
         <td th:text="${stat.index + 1}"></td>
         <td th:text="${w.word}"></td>
         <td th:text="${w.pronunciation}"></td>
-        <td th:text="${w.pos}"></td>
         <td th:text="${w.meaning}"></td>
+
+        <!-- Số lần kiểm tra -->
+        <td th:with="s=${statsMap[w.id]}"
+            th:text="${s != null ? s.totalAttempts : 0}">
+        </td>
+
+        <!-- Số lần sai -->
+        <td th:with="s=${statsMap[w.id]}"
+            th:text="${s != null ? s.wrongCount : 0}">
+        </td>
+
+        <!-- Tỉ lệ sai (%) -->
+        <td th:with="s=${statsMap[w.id]}"
+            th:text="${s != null && s.totalAttempts > 0
+                 ? #numbers.formatDecimal(
+                       (s.wrongCount * 100.0) / s.totalAttempts,
+                       1, 1
+                   ) + '%'
+                 : '0%'}">
+        </td>
     </tr>
     </tbody>
+
 </table>
+
 
 <!-- Sau này bạn thêm nút "Kiểm tra bài này" ở đây -->
 <!-- <a class="btn" th:href="@{|/quiz/lesson/${lang}/${level}/${lessonNo}|}">Kiểm tra bài này</a> -->

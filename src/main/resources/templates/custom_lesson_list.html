@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Học Của Tôi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #667eea;
+        }
+        
+        .btn-create {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .btn-create:hover {
+            transform: translateY(-2px);
+        }
+        
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .lesson-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .lesson-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .lesson-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .lesson-card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .lesson-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #888;
+        }
+        
+        .lesson-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .lesson-actions a {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .btn-edit {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-view {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .empty-state {
+            background: white;
+            padding: 60px 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #999;
+        }
+        
+        .empty-state h2 {
+            margin-bottom: 20px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-submit {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-cancel {
+            background: #e74c3c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Bài Học Của Tôi</h1>
+            <button class="btn-create" onclick="showCreateModal()">➕ Tạo Bài Mới</button>
+        </div>
+        
+        <div th:if="${lessons.isEmpty()}" class="empty-state">
+            <h2>Bạn chưa có bài học nào</h2>
+            <p>Hãy tạo bài học đầu tiên để bắt đầu học tập!</p>
+        </div>
+        
+        <div th:unless="${lessons.isEmpty()}" class="lessons-grid">
+            <div th:each="lesson : ${lessons}" class="lesson-card">
+                <h3 th:text="${lesson.title}">Tên bài học</h3>
+                <p th:text="${lesson.description}">Mô tả</p>
+                <div class="lesson-meta">
+                    <span>📖 <span th:text="${lesson.vocabularies.size()}">0</span> từ</span>
+                    <span>🌐 <span th:text="${lesson.languageCode == 'cn' ? 'Tiếng Trung' : lesson.languageCode}">Ngôn ngữ</span></span>
+                    <span>📊 <span th:text="${lesson.level}">Level</span></span>
+                </div>
+                <div class="lesson-actions">
+                    <a th:href="@{/custom-lessons/{id}/edit(id=${lesson.id})}" class="btn-edit">✏️ Chỉnh sửa</a>
+                    <a th:href="@{/custom-lessons/{id}/view(id=${lesson.id})}" class="btn-view">📝 Ôn Tập</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal tạo bài mới -->
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 20px;">Tạo Bài Học Mới</h2>
+            <form action="/custom-lessons/create" method="post">
+                <div class="form-group">
+                    <label>Tên Bài Học <span style="color: #e74c3c;">*</span></label>
+                    <input type="text" name="title" required placeholder="VD: Từ vựng HSK 1">
+                </div>
+                
+                <div class="form-group">
+                    <label>Mô Tả</label>
+                    <textarea name="description" placeholder="Mô tả ngắn về bài học này"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Ngôn Ngữ</label>
+                    <select name="languageCode">
+                        <option value="cn">Tiếng Trung</option>
+                        <option value="en">Tiếng Anh</option>
+                        <option value="jp">Tiếng Nhật</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Cấp Độ</label>
+                    <select name="level">
+                        <option value="A1">A1 - Sơ cấp</option>
+                        <option value="A2">A2 - Cơ bản</option>
+                        <option value="B1">B1 - Trung cấp</option>
+                        <option value="B2">B2 - Trung cao cấp</option>
+                        <option value="C1">C1 - Cao cấp</option>
+                    </select>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-submit">✓ Tạo Bài</button>
+                    <button type="button" class="btn-cancel" onclick="hideCreateModal()">✕ Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function showCreateModal() {
+            document.getElementById('createModal').classList.add('active');
+        }
+        
+        function hideCreateModal() {
+            document.getElementById('createModal').classList.remove('active');
+        }
+        
+        // Click outside to close
+        document.getElementById('createModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideCreateModal();
+            }
+        });
+    </script>
+</body>
+</html>

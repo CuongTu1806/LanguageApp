@@ -5,7 +5,9 @@ import com.example.appNN.dto.QuizQuestionDto;
 import com.example.appNN.dto.QuizResultDto;
 import com.example.appNN.entity.LessonQuizAttemptEntity;
 import com.example.appNN.model.QuizMode;
+import com.example.appNN.service.LessonService;
 import com.example.appNN.service.QuizService;
+import com.example.appNN.service.UserVocabStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +23,8 @@ import java.util.Map;
 public class QuizController {
 
     private final QuizService quizService;
+    private final UserVocabStatsService userVocabStatsService;
+    private final LessonService lessonService;
 
     // Tạm hard-code user 1 (giống LessonController)
     private Long getCurrentUserId() {
@@ -78,8 +82,7 @@ public class QuizController {
                              HttpSession session) {
 
         @SuppressWarnings("unchecked")
-        List<QuizQuestionDto> questions =
-                (List<QuizQuestionDto>) session.getAttribute("quizQuestions");
+        List<QuizQuestionDto> questions = (List<QuizQuestionDto>) session.getAttribute("quizQuestions");
         QuizMode mode = (QuizMode) session.getAttribute("quizMode");
 
         if (questions == null || mode == null) {
@@ -95,13 +98,27 @@ public class QuizController {
         }
 
         System.out.println("[DEBUG] answers = " + answers);
+        Long userId = getCurrentUserId(); // tạm 1L
+
+        // ✅ CẬP NHẬT THỐNG KÊ TỪNG CÂU
+        for (int i = 0; i < questions.size(); i++) {
+            QuizQuestionDto q = questions.get(i);
+            String ans = answers.get(i);
+            boolean correct = q.getCorrectAnswer().equals(ans);
+
+            userVocabStatsService.updateStats(userId, q.getVocabId(), correct);
+        }
 
         // Chấm điểm
-        QuizResultDto result = quizService.evaluate(questions, answers);
+        QuizResultDto result = quizService.evaluate(userId, questions, answers);
 
-        Long userId = getCurrentUserId(); // tạm 1L
+
         quizService.saveAttempt(userId, lang, level, lessonNo, mode, result);
-
+        lessonService.updateLessonReviewSchedule(
+                userId, lang, level, lessonNo,
+                result.getScore(), result.getTotal()
+        );
+        // truyền ra view
         model.addAttribute("lang", lang);
         model.addAttribute("level", level);
         model.addAttribute("lessonNo", lessonNo);

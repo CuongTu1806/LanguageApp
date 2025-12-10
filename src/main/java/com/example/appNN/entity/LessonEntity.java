@@ -36,6 +36,13 @@ public class LessonEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+
+    @Column(name = "review_stage")
+    private Integer reviewStage;  // 0,1,2,3,...
+
+    @Column(name = "next_review_at")
+    private LocalDateTime nextReviewAt;
+
     // Các từ trong bài
     @ManyToMany
     @JoinTable(

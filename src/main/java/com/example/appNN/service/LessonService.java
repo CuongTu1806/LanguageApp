@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -51,6 +52,7 @@ public class LessonService {
         lesson.setLevel(level);
         lesson.setLessonIndex(nextIndex);
         lesson.setCreatedAt(LocalDateTime.now());
+        lesson.setReviewStage(0);  // Bài mới bắt đầu từ stage 0
         lesson.getVocabularies().addAll(candidates);
 
         lessonRepository.save(lesson);
@@ -78,4 +80,75 @@ public class LessonService {
         list.sort(Comparator.comparing(VocabularyEntity::getId));
         return list;
     }
+
+    @Transactional
+    public void updateLessonReviewSchedule(Long userId,
+                                           String languageCode,
+                                           String level,
+                                           Integer lessonIndex,
+                                           int score,
+                                           int total) {
+
+        LessonEntity lesson = lessonRepository
+                .findByUserIdAndLanguageCodeAndLevelAndLessonIndex(
+                        userId, languageCode, level, lessonIndex);
+
+        if (lesson == null) {
+            throw new RuntimeException("Không tìm thấy lesson cho user="
+                    + userId + ", lang=" + languageCode + ", level=" + level
+                    + ", lessonIndex=" + lessonIndex);
+        }
+
+        // Nếu chưa có lịch thì thôi (có thể set lịch ban đầu ở createNewLesson)
+        LocalDateTime due = lesson.getNextReviewAt();
+        if (due == null) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate today = now.toLocalDate();
+        LocalDate dueDate = due.toLocalDate();
+
+        // ❗ CHỈ xử lý tăng/giảm bậc nếu HÔM NAY là NGÀY ĐẾN HẠN
+        if (!today.equals(dueDate)) {
+            // Không đúng ngày ôn định kì → không thay đổi stage/next_review
+            return;
+        }
+
+        // Từ đây trở đi là "đúng ngày ôn", mới xét điểm để điều chỉnh
+        double rate = total > 0 ? (double) score / total : 0.0;
+
+        Integer currentStage = lesson.getReviewStage();
+        if (currentStage == null) currentStage = 0;
+
+        if (rate < 0.5) {
+            // Sai nhiều: hạ 1 bậc và cho ôn lại sớm (ví dụ: ngày mai)
+            int newStage = Math.max(0, currentStage - 1);
+            lesson.setReviewStage(newStage);
+            lesson.setNextReviewAt(now.plusDays(1));
+        } else {
+            // Đúng ổn: tăng bậc theo lịch bạn định nghĩa
+            int newStage = currentStage + 1;
+            lesson.setReviewStage(newStage);
+
+            LocalDateTime next;
+            switch (newStage) {
+                case 1 -> next = now.plusDays(3);   // sau lần ôn 1: +3 ngày
+                case 2 -> next = now.plusDays(7);   // sau lần ôn 2: +7 ngày
+                case 3 -> next = now.plusDays(14);  // sau lần ôn 3: +14 ngày
+                default -> next = now.plusDays(14); // từ lần 4 trở đi: 2 tuần/lần
+            }
+            lesson.setNextReviewAt(next);
+        }
+
+        lessonRepository.save(lesson);
+    }
+
+    public List<LessonEntity> getDueLessons(Long userId) {
+        LocalDateTime now = LocalDateTime.now();
+        return lessonRepository.findDueLessons(userId, now);
+    }
+
+
+
 }

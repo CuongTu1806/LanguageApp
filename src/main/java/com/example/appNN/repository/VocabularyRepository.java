@@ -65,5 +65,15 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntity, Lo
     // Lấy toàn bộ từ của 1 lang + level (dùng làm nguồn tạo đáp án sai)
     List<VocabularyEntity> findByLanguageCodeAndLevel(String languageCode, String level);
 
+    // Lấy từ vựng theo languageCode, level và lessonNo
+    List<VocabularyEntity> findByLanguageCodeAndLevelAndLessonNo(
+            String languageCode, String level, Integer lessonNo
+    );
+    
+    /**
+     * Kiểm tra từ đã tồn tại trong DB chưa (theo word và languageCode)
+     */
+    VocabularyEntity findByWordAndLanguageCode(String word, String languageCode);
+
 }
 

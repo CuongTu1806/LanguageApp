@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface LessonRepository extends JpaRepository<LessonEntity, Long> {
@@ -25,4 +26,17 @@ public interface LessonRepository extends JpaRepository<LessonEntity, Long> {
     LessonEntity findByUserIdAndLanguageCodeAndLevelAndLessonIndex(
             Long userId, String languageCode, String level, Integer lessonIndex
     );
+
+
+
+    @Query("""
+    SELECT l FROM LessonEntity l
+    WHERE l.user.id = :userId
+      AND l.nextReviewAt IS NOT NULL
+      AND l.nextReviewAt <= :until
+    ORDER BY l.nextReviewAt ASC
+    """)
+    List<LessonEntity> findDueLessons(@Param("userId") Long userId,
+                                      @Param("until") LocalDateTime until);
+
 }

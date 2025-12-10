@@ -1,0 +1,9 @@
+# Ignore tất cả hình ảnh trong thư mục này (vì được tự động tải về)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+
+# Giữ file .gitignore này
+!.gitignore

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch ôn tập</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+        h2 { margin-bottom: 10px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
+        th { background: #f5f5f5; }
+        .btn { padding: 4px 10px; border-radius: 4px; border: 1px solid #333;
+            background: #4caf50; color: #fff; text-decoration: none; }
+        .empty { margin-top: 10px; color: #666; }
+    </style>
+</head>
+<body>
+
+<h2>Lịch ôn tập hôm nay</h2>
+
+<div th:if="${#lists.isEmpty(lessons)}" class="empty">
+    Hôm nay chưa có bài nào đến hạn ôn. 🎉
+</div>
+
+<table th:if="${!#lists.isEmpty(lessons)}">
+    <thead>
+    <tr>
+        <th>Ngôn ngữ</th>
+        <th>Trình độ</th>
+        <th>Bài số</th>
+        <th>Giai đoạn ôn</th>
+        <th>Hạn ôn</th>
+        <th>Hành động</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="ls : ${lessons}">
+        <td th:text="${ls.languageCode}"></td>
+        <td th:text="${ls.level}"></td>
+        <td th:text="${ls.lessonIndex}"></td>
+        <td th:text="${ls.reviewStage}"></td>
+        <td th:text="${#temporals.format(ls.nextReviewAt, 'dd/MM/yyyy HH:mm')}"></td>
+        <td>
+            <!-- vào quiz ôn lại bài -->
+            <a class="btn"
+               th:href="@{|/courses/${ls.languageCode}/${ls.level}/lessons/${ls.lessonIndex}/quiz?mode=1|}">
+                Ôn bài
+            </a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

@@ -21,6 +21,10 @@
     <div>
         <h2 th:text="'Khóa học: ' + ${lang} + ' - ' + ${level}"></h2>
     </div>
+    <div>
+        <a href="/custom-lessons" class="btn btn-primary" style="margin-right: 10px;">📚 Bài Học Của Tôi</a>
+        <a href="/" class="btn">← Trang chủ</a>
+    </div>
 </div>
 
 <div class="message" th:if="${message != null}" th:text="${message}"></div>

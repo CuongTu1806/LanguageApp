@@ -33,6 +33,9 @@ public class VocabularyEntity {
     @Column(name = "meaning")
     private String meaning;
 
+    @Column(name = "meaning_en", length = 500)
+    private String meaningEn;
+
     @Column(name = "example_src")
     private String exampleSrc;
 
@@ -41,6 +44,9 @@ public class VocabularyEntity {
 
     @Column(name = "audio_path")
     private String audioPath;
+
+    @Column(name = "image_path")
+    private String imagePath;
 
     @Column(name = "language_code")
     private String languageCode;

@@ -7,6 +7,7 @@ import com.example.appNN.entity.*;
 import com.example.appNN.model.QuizMode;
 import com.example.appNN.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -127,22 +128,34 @@ public class QuizService {
     }
 
     // chấm điểm + lấy danh sách từ sai
-    public QuizResultDto evaluate(List<QuizQuestionDto> questions, List<String> answers) {
+    @Autowired
+    private UserVocabStatsService userVocabStatsService;
+
+    public QuizResultDto evaluate(Long userId,
+                                  List<QuizQuestionDto> questions,
+                                  List<String> answers) {
+
         int correctCount = 0;
-        List<Long> wrongIds = new java.util.ArrayList<>();
+        List<Long> wrongIds = new ArrayList<>();
 
-        for (int i = 0; i < questions.size() && i < answers.size(); i++) {
+        for (int i = 0; i < questions.size(); i++) {
+
             QuizQuestionDto q = questions.get(i);
-            String userAns = answers.get(i);
+            String ans = answers.get(i);
 
-            if (java.util.Objects.equals(q.getCorrectAnswer(), userAns)) {
-                correctCount++;
-            } else {
+            boolean correct = q.getCorrectAnswer().equals(ans);
+
+            if (!correct) {
                 wrongIds.add(q.getVocabId());
             }
+            if (correct) correctCount++;
+
+            userVocabStatsService.updateStats(userId, q.getVocabId(), correct);
         }
+
         return new QuizResultDto(correctCount, questions.size(), wrongIds);
     }
+
 
     @Transactional
     public LessonQuizAttemptEntity saveAttempt(Long userId,
