@@ -1,68 +1,530 @@
-<!-- src/main/resources/templates/quiz_do.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Làm quiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Time!</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; }
-        .question-card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
-        .question-title { font-weight: bold; margin-bottom: 8px; }
-        .option { margin-bottom: 4px; }
-        .btn { padding: 6px 12px; border-radius: 4px; border: 1px solid #333;
-            background: #4caf50; color: #fff; cursor: pointer; }
-        .btn-back { background: #f5f5f5; color: #333; }
-        .mode-label { font-size: 14px; color: #666; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .quiz-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .quiz-header {
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .quiz-progress {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .progress-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .timer-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .timer.warning {
+            animation: pulse 0.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .progress-bar-container {
+            width: 200px;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+        }
+        
+        .quiz-info {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .btn-exit {
+            padding: 10px 20px;
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .btn-exit:hover {
+            background: #c0392b;
+        }
+        
+        /* Question Area */
+        .question-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px 40px;
+            position: relative;
+        }
+        
+        .question-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+        }
+        
+        .question-card.active {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+            position: relative;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Feedback Notification */
+        .feedback-notification {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            font-size: 48px;
+            font-weight: bold;
+            z-index: 100;
+            display: none;
+            text-align: center;
+        }
+        
+        .feedback-notification.show {
+            display: block;
+            animation: feedbackPop 0.5s ease-out;
+        }
+        
+        .feedback-notification.correct-feedback {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        
+        .feedback-notification.wrong-feedback {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .feedback-notification.timeout-feedback {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        @keyframes feedbackPop {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        .question-number {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .question-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 40px;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Answer Options */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .option-btn {
+            padding: 30px 20px;
+            border: 3px solid transparent;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option-btn:hover:not(.disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .option-btn.selected {
+            border-color: white;
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.3);
+        }
+        
+        .option-btn.correct {
+            background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+            animation: correctPulse 0.6s ease-out;
+            border-color: #fff !important;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.8) !important;
+        }
+        
+        .option-btn.wrong {
+            background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+            animation: wrongShake 0.5s ease-out;
+            border-color: #fff !important;
+        }
+        
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-15px); }
+            75% { transform: translateX(15px); }
+        }
+        
+        .option-btn.disabled {
+            pointer-events: none;
+        }
+        
+        /* Kahoot Colors */
+        .option-btn:nth-child(1) {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .option-btn:nth-child(2) {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        
+        .option-btn:nth-child(3) {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .option-btn:nth-child(4) {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        
+        .option-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
-
-<div class="top-bar">
-    <div>
-        <h2 th:text="'Quiz - Bài ' + ${lessonNo} + ' (' + ${lang} + ' - ' + ${level} + ')'"></h2>
-        <div class="mode-label">
-            Kiểu:
-            <span th:switch="${mode}">
-                <span th:case="1">word + pronunciation → meaning</span>
-                <span th:case="2">word → meaning</span>
-                <span th:case="3">meaning → word</span>
-                <span th:case="*">word + pronunciation → meaning</span>
-            </span>
+    <div class="quiz-container">
+        <!-- Header -->
+        <div class="quiz-header">
+            <div class="quiz-progress">
+                <div class="progress-text">
+                    <span id="currentQuestion">1</span> / <span id="totalQuestions" th:text="${questions.size()}">10</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+            <div class="timer-container">
+                <span>⏱️</span>
+                <div class="timer" id="timer">10</div>
+            </div>
+            <div class="quiz-info">
+                <span th:text="'Bài ' + ${lessonNo} + ' - ' + ${lang} + ' ' + ${level}"></span>
+            </div>
+            <a th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}|}" class="btn-exit">✕ Thoát</a>
+        </div>
+        
+        <!-- Question Area -->
+        <div class="question-area">
+            <form id="quizForm" th:action="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz/submit|}" method="post">
+                <div th:each="q, stat : ${questions}" class="question-card" th:data-index="${stat.index}">
+                    <!-- Feedback Notification -->
+                    <div class="feedback-notification"></div>
+                    
+                    <div class="question-number">Câu <span th:text="${stat.index + 1}">1</span></div>
+                    <div class="question-text" th:text="${q.questionText}">Từ vựng này nghĩa là gì?</div>
+                    
+                    <div class="options-grid">
+                        <div th:each="opt, optStat : ${q.options}" 
+                             class="option-btn" 
+                             th:data-question="${stat.index}"
+                             th:data-value="${opt}"
+                             onclick="selectOptionFromData(this)">
+                            <span class="option-icon" th:text="${optStat.index == 0 ? '🔴' : (optStat.index == 1 ? '🔵' : (optStat.index == 2 ? '🟡' : '🟢'))}">🔴</span>
+                            <span th:text="${opt}">Đáp án</span>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" th:name="'answer' + ${stat.index}" th:id="'answer' + ${stat.index}" />
+                    <input type="hidden" th:id="'correct' + ${stat.index}" th:value="${q.correctAnswer}" />
+                </div>
+            </form>
         </div>
     </div>
-    <div th:if="${practiceWrong}">
-        <strong>Chế độ luyện từ sai</strong>
-    </div>
-
-    <a class="btn btn-back" th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}|}">← Quay lại bài</a>
-</div>
-
-<form th:action="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz/submit|}"
-      method="post">
-
-    <div th:each="q, stat : ${questions}" class="question-card">
-        <div class="question-title">
-            Câu <span th:text="${stat.index + 1}"></span>:
-            <span th:text="${q.questionText}"></span>
-        </div>
-
-        <div th:each="opt : ${q.options}" class="option">
-            <label>
-                <!-- TÊN INPUT: answer0, answer1, answer2,... -->
-                <input type="radio"
-                       th:name="${'answer' + stat.index}"
-                       th:value="${opt}"
-                       required/>
-                <span th:text="${opt}"></span>
-            </label>
-        </div>
-    </div>
-
-    <button type="submit" class="btn">Nộp bài</button>
-</form>
-
-
-
+    
+    <script th:inline="javascript">
+        const totalQuestions = /*[[${questions.size()}]]*/ 10;
+        let currentIndex = 0;
+        const answers = new Array(totalQuestions).fill(null);
+        let timeLeft = 10;
+        let timerInterval = null;
+        let questionLocked = false;
+        
+        // Hiển thị câu hỏi đầu tiên
+        document.addEventListener('DOMContentLoaded', function() {
+            showQuestion(0);
+            updateProgress();
+            startTimer();
+            
+            // Restore previous selections if any
+            answers.forEach((ans, idx) => {
+                if (ans) {
+                    const card = document.querySelector(`.question-card[data-index="${idx}"]`);
+                    const optionBtn = Array.from(card.querySelectorAll('.option-btn')).find(btn => btn.dataset.value === ans);
+                    if (optionBtn) {
+                        optionBtn.classList.add('selected');
+                    }
+                }
+            });
+        });
+        
+        function showQuestion(index) {
+            // Clear any existing timers first
+            clearInterval(timerInterval);
+            
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelector(`.question-card[data-index="${index}"]`).classList.add('active');
+            currentIndex = index;
+            questionLocked = false;
+            
+            // Start timer
+            startTimer();
+            
+            updateProgress();
+        }
+        
+        function selectOptionFromData(element) {
+            if (questionLocked) return;
+            
+            const questionIndex = parseInt(element.dataset.question);
+            const value = element.dataset.value;
+            selectOption(questionIndex, value, element);
+        }
+        
+        function selectOption(questionIndex, value, element) {
+            if (questionLocked) return;
+            
+            questionLocked = true;
+            clearInterval(timerInterval);
+            
+            // Get correct answer
+            const correctAnswer = document.getElementById('correct' + questionIndex).value;
+            const card = element.closest('.question-card');
+            const isCorrect = (value === correctAnswer);
+            
+            // Disable all options
+            card.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.add('disabled');
+            });
+            
+            // Save answer
+            answers[questionIndex] = value;
+            document.getElementById('answer' + questionIndex).value = value;
+            
+            // Show feedback on selected and correct answers
+            if (isCorrect) {
+                element.classList.add('correct');
+                showFeedback(card, '✅ Chính xác!', 'correct');
+            } else {
+                element.classList.add('wrong');
+                // Highlight the correct answer
+                card.querySelectorAll('.option-btn').forEach(btn => {
+                    if (btn.dataset.value === correctAnswer) {
+                        btn.classList.add('correct');
+                    }
+                });
+                showFeedback(card, '❌ Sai rồi!', 'wrong');
+            }
+            
+            // Auto move to next question after 2s
+            setTimeout(() => {
+                if (currentIndex < totalQuestions - 1) {
+                    nextQuestion();
+                } else {
+                    // Last question - submit form
+                    submitQuiz();
+                }
+            }, 2000);
+        }
+        
+        function nextQuestion() {
+            if (currentIndex < totalQuestions - 1) {
+                showQuestion(currentIndex + 1);
+            }
+        }
+        
+        function submitQuiz() {
+            // Fill in empty answers with empty string
+            for (let i = 0; i < totalQuestions; i++) {
+                if (!answers[i]) {
+                    document.getElementById('answer' + i).value = '';
+                }
+            }
+            document.getElementById('quizForm').submit();
+        }
+        
+        function updateProgress() {
+            document.getElementById('currentQuestion').textContent = currentIndex + 1;
+            const progress = ((currentIndex + 1) / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        
+        function startTimer() {
+            // Clear any existing timer first
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timeLeft = 10;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('timer').classList.remove('warning');
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                
+                if (timeLeft <= 3) {
+                    document.getElementById('timer').classList.add('warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+        
+        function showFeedback(card, message, type) {
+            const feedback = card.querySelector('.feedback-notification');
+            feedback.textContent = message;
+            feedback.className = 'feedback-notification show ' + type + '-feedback';
+            
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, 1500);
+        }
+        
+        function handleTimeout() {
+            if (questionLocked) return;
+            
+            questionLocked = true;
+            const card = document.querySelector(`.question-card[data-index="${currentIndex}"]`);
+            const correctAnswer = document.getElementById('correct' + currentIndex).value;
+            
+            // Disable all options and show correct answer
+            card.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.add('disabled');
+                if (btn.dataset.value === correctAnswer) {
+                    btn.classList.add('correct');
+                }
+            });
+            
+            // Show timeout feedback
+            showFeedback(card, '⏰ Hết giờ!', 'timeout');
+            
+            // Auto move to next question
+            setTimeout(() => {
+                if (currentIndex < totalQuestions - 1) {
+                    nextQuestion();
+                } else {
+                    // Last question - submit form
+                    submitQuiz();
+                }
+            }, 2000);
+        }
+        
+        // Form submit - removed manual submit handler
+    </script>
 </body>
 </html>

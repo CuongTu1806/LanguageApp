@@ -36,6 +36,8 @@ public class LessonEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "vocabulary_count")
+    private Integer vocabularyCount = 0; // Số lượng từ vựng trong bài
 
     @Column(name = "review_stage")
     private Integer reviewStage;  // 0,1,2,3,...
@@ -44,7 +46,7 @@ public class LessonEntity {
     private LocalDateTime nextReviewAt;
 
     // Các từ trong bài
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "lesson_vocabulary",
             joinColumns = @JoinColumn(name = "lesson_id"),

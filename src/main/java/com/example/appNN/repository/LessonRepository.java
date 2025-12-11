@@ -23,8 +23,17 @@ public interface LessonRepository extends JpaRepository<LessonEntity, Long> {
             Long userId, String languageCode, String level
     );
 
+    @Query("SELECT l FROM LessonEntity l " +
+           "LEFT JOIN FETCH l.vocabularies " +
+           "WHERE l.user.id = :userId " +
+           "AND l.languageCode = :lang " +
+           "AND l.level = :level " +
+           "AND l.lessonIndex = :lessonIndex")
     LessonEntity findByUserIdAndLanguageCodeAndLevelAndLessonIndex(
-            Long userId, String languageCode, String level, Integer lessonIndex
+            @Param("userId") Long userId, 
+            @Param("lang") String languageCode, 
+            @Param("level") String level, 
+            @Param("lessonIndex") Integer lessonIndex
     );
 
 
@@ -38,5 +47,21 @@ public interface LessonRepository extends JpaRepository<LessonEntity, Long> {
     """)
     List<LessonEntity> findDueLessons(@Param("userId") Long userId,
                                       @Param("until") LocalDateTime until);
+
+    // Tìm kiếm lesson theo số lượng từ
+    List<LessonEntity> findByUserIdAndVocabularyCountBetween(
+            Long userId, Integer minCount, Integer maxCount
+    );
+    
+    List<LessonEntity> findByUserIdAndVocabularyCountGreaterThanEqual(
+            Long userId, Integer minCount
+    );
+    
+    List<LessonEntity> findByUserIdAndVocabularyCountLessThanEqual(
+            Long userId, Integer maxCount
+    );
+    
+    // Tìm tất cả lesson của user
+    List<LessonEntity> findByUserId(Long userId);
 
 }

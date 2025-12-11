@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${languageName} + ' - Học Tập'">Học Tập</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .navbar h1 {
+            font-size: 20px;
+        }
+        
+        .btn-home {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+        
+        .btn-home:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .search-sections {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 15px;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .search-box,
+        .lesson-filters {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .search-box {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .search-box h2 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        
+        .search-form-inline {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .search-input-group {
+            flex: 1;
+        }
+        
+        .search-input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .search-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-search {
+            width: 100%;
+            padding: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-search:hover {
+            background: #5568d3;
+        }
+        
+        .btn-search-small {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .btn-search-small:hover {
+            background: #5568d3;
+        }
+        
+        .vocab-result {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            display: none;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+        
+        .vocab-result.show {
+            display: block;
+        }
+        
+        .vocab-word {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        
+        .vocab-pronunciation {
+            font-size: 16px;
+            color: #667eea;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+        
+        .vocab-meaning {
+            font-size: 14px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .vocab-example {
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #f39c12;
+            font-size: 13px;
+        }
+        
+        .lesson-filters {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .lesson-filters h2 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        
+        .filter-row {
+            display: grid;
+            grid-template-columns: 200px 280px auto auto;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 12px;
+        }
+        
+        .btn-create {
+            padding: 8px 16px;
+            background: #8e44ad;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .btn-create:hover {
+            background: #7d3c98;
+        }
+        
+        .filter-group {
+            margin-bottom: 0;
+        }
+        
+        .filter-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 13px;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        
+        .filter-range {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .lesson-results {
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            max-height: calc(100vh - 220px);
+            overflow-y: auto;
+        }
+        
+        .lesson-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .lesson-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        
+        .lesson-info h3 {
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+        
+        .lesson-meta {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .lesson-meta span {
+            margin-right: 10px;
+        }
+        
+        .lesson-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-learn {
+            padding: 6px 12px;
+            background: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        
+        .btn-learn:hover {
+            background: #229954;
+        }
+        
+        .btn-quiz {
+            padding: 6px 12px;
+            background: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        
+        .btn-quiz:hover {
+            background: #d35400;
+        }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .modal h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .mode-options {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .mode-btn {
+            padding: 12px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .mode-btn:hover {
+            background: #e8e9ea;
+            border-color: #667eea;
+        }
+        
+        .mode-btn-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        
+        .mode-btn-desc {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .create-lesson-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .create-lesson-input label {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .create-lesson-input input {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .btn-cancel {
+            padding: 8px 16px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-cancel:hover {
+            background: #7f8c8d;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 14px;
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-left">
+            <span th:text="${languageIcon}">🇨🇳</span>
+            <h1 th:text="'Học ' + ${languageName}">Học Tiếng Trung</h1>
+        </div>
+        <a href="/" class="btn-home">← Trang Chủ</a>
+    </div>
+    
+    <div class="container">
+        <div class="search-sections">
+            <!-- Tìm kiếm từ vựng -->
+            <div class="search-box">
+                <h2>🔍 Tìm Kiếm Từ Vựng</h2>
+                <form id="vocabSearchForm" class="search-form-inline">
+                    <div class="search-input-group">
+                        <input type="text" id="vocabSearchInput" placeholder="Nhập từ cần tìm..." />
+                    </div>
+                    <button type="submit" class="btn-search-small">Tìm</button>
+                </form>
+                
+                <div class="vocab-result" id="vocabResult">
+                    <!-- Kết quả tìm kiếm từ sẽ hiện ở đây -->
+                </div>
+            </div>
+            
+            <!-- Tìm kiếm bài học -->
+            <div class="lesson-filters">
+                <h2>📚 Tìm Kiếm Bài Học</h2>
+                
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Trình Độ</label>
+                        <select id="levelFilter">
+                            <option value="">Tất cả</option>
+                            <option value="A1">A1 - Sơ cấp</option>
+                            <option value="A2">A2 - Cơ bản</option>
+                            <option value="B1">B1 - Trung cấp</option>
+                            <option value="B2">B2 - Trung cao cấp</option>
+                            <option value="C1">C1 - Cao cấp</option>
+                            <option value="custom">Bài Tự Tạo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Số Lượng Từ</label>
+                        <div class="filter-range">
+                            <input type="number" id="minVocab" placeholder="Tối thiểu" min="0" />
+                            <span>-</span>
+                            <input type="number" id="maxVocab" placeholder="Tối đa" min="0" />
+                        </div>
+                    </div>
+                    
+                    <button class="btn-search" onclick="searchLessons()">Tìm Kiếm</button>
+                    
+                    <button class="btn-create" onclick="showCreateLessonModal()">+ Tạo Bài Học</button>
+                </div>
+                
+                <div class="lesson-results" id="lessonResults">
+                    <!-- Kết quả tìm kiếm bài học -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal chọn chế độ kiểm tra -->
+    <div class="modal-overlay" id="quizModal">
+        <div class="modal">
+            <h3>📝 Chọn Chế Độ Kiểm Tra</h3>
+            <div class="mode-options">
+                <button class="mode-btn" onclick="startQuiz(1)">
+                    <div class="mode-btn-title">📖 Chế độ 1: Tiếng Trung → Tiếng Việt</div>
+                    <div class="mode-btn-desc">Cho từ tiếng Trung, chọn nghĩa tiếng Việt</div>
+                </button>
+                <button class="mode-btn" onclick="startQuiz(2)">
+                    <div class="mode-btn-title">🔤 Chế độ 2: Tiếng Việt → Tiếng Trung</div>
+                    <div class="mode-btn-desc">Cho nghĩa tiếng Việt, chọn từ tiếng Trung</div>
+                </button>
+                <button class="mode-btn" onclick="startQuiz('wrong')">
+                    <div class="mode-btn-title">🔄 Chế độ 3: Ôn Lại Từ Sai</div>
+                    <div class="mode-btn-desc">Luyện lại các từ đã trả lời sai trước đó</div>
+                </button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeQuizModal()">Hủy</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal tạo bài học -->
+    <div class="modal-overlay" id="createLessonModal">
+        <div class="modal">
+            <h3>➕ Tạo Bài Học Mới</h3>
+            <div class="mode-options">
+                <button class="mode-btn" onclick="showRandomLessonForm()">
+                    <div class="mode-btn-title">🎲 Tạo Ngẫu Nhiên</div>
+                    <div class="mode-btn-desc">Hệ thống tự động chọn từ vựng chưa học</div>
+                </button>
+                <div id="randomLessonForm" class="create-lesson-input" style="display: none;">
+                    <label>Số từ:</label>
+                    <input type="number" id="randomLessonSize" value="15" min="1" max="50" />
+                    <button class="btn-search" onclick="createRandomLesson()">Tạo</button>
+                </div>
+                
+                <button class="mode-btn" onclick="createCustomLesson()">
+                    <div class="mode-btn-title">✏️ Tự Tạo Bài Học</div>
+                    <div class="mode-btn-desc">Tự chọn từ vựng và nội dung bài học</div>
+                </button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeCreateLessonModal()">Hủy</button>
+            </div>
+        </div>
+    </div>
+    
+    <script th:inline="javascript">
+        const LANGUAGE_CODE = /*[[${languageCode}]]*/ 'cn';
+        const USER_ID = 1;
+        
+        // Tìm kiếm từ vựng
+        document.getElementById('vocabSearchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const word = document.getElementById('vocabSearchInput').value.trim();
+            
+            if (!word) return;
+            
+            try {
+                const response = await fetch(`/api/vocabulary/search?word=${encodeURIComponent(word)}&languageCode=${LANGUAGE_CODE}`);
+                const vocab = await response.json();
+                
+                const resultDiv = document.getElementById('vocabResult');
+                
+                if (vocab && vocab.word) {
+                    resultDiv.innerHTML = `
+                        <div class="vocab-word">${vocab.word}</div>
+                        <div class="vocab-pronunciation">${vocab.pronunciation || ''}</div>
+                        <div class="vocab-meaning"><strong>${vocab.pos ? '[' + vocab.pos + ']' : ''}</strong> ${vocab.meaning}</div>
+                        ${vocab.exampleSrc ? `
+                            <div class="vocab-example">
+                                <div style="margin-bottom: 5px;">${vocab.exampleSrc}</div>
+                                <div style="color: #27ae60;">${vocab.exampleVi || ''}</div>
+                            </div>
+                        ` : ''}
+                    `;
+                    resultDiv.classList.add('show');
+                } else {
+                    resultDiv.innerHTML = '<div class="empty-state">Không tìm thấy từ này</div>';
+                    resultDiv.classList.add('show');
+                }
+            } catch (error) {
+                console.error('Error searching vocabulary:', error);
+            }
+        });
+        
+        // Tìm kiếm bài học
+        async function searchLessons() {
+            const level = document.getElementById('levelFilter').value;
+            const minVocab = document.getElementById('minVocab').value;
+            const maxVocab = document.getElementById('maxVocab').value;
+            
+            const params = new URLSearchParams();
+            params.append('languageCode', LANGUAGE_CODE);
+            params.append('userId', USER_ID);
+            if (level && level !== 'custom') params.append('level', level);
+            if (minVocab) params.append('minCount', minVocab);
+            if (maxVocab) params.append('maxCount', maxVocab);
+            
+            try {
+                let lessons = [];
+                
+                if (level === 'custom') {
+                    // Tìm custom lessons
+                    const response = await fetch(`/api/lessons/search/custom?${params.toString()}`);
+                    lessons = await response.json();
+                } else {
+                    // Tìm regular lessons
+                    const response = await fetch(`/api/lessons/search?${params.toString()}`);
+                    lessons = await response.json();
+                }
+                
+                displayLessons(lessons, level === 'custom');
+            } catch (error) {
+                console.error('Error searching lessons:', error);
+            }
+        }
+        
+        function displayLessons(lessons, isCustom) {
+            const container = document.getElementById('lessonResults');
+            
+            if (lessons.length === 0) {
+                container.innerHTML = '<div class="empty-state">Không tìm thấy bài học nào</div>';
+                return;
+            }
+            
+            const html = lessons.map((lesson, index) => {
+                const displayIndex = index + 1; // Số thứ tự liên tục: 1, 2, 3...
+                
+                if (isCustom) {
+                    return `
+                        <div class="lesson-card">
+                            <div class="lesson-info">
+                                <h3>${lesson.title}</h3>
+                                <div class="lesson-meta">
+                                    <span>📖 ${lesson.vocabularyCount || 0} từ</span>
+                                    <span>📊 ${lesson.level}</span>
+                                    <span>🎨 Tự tạo</span>
+                                </div>
+                            </div>
+                            <div class="lesson-actions">
+                                <a href="/custom-lessons/${lesson.id}/view" class="btn-learn">Học</a>
+                                <button class="btn-quiz" onclick="showQuizModal('custom', ${lesson.id})">Ôn Tập</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="lesson-card">
+                            <div class="lesson-info">
+                                <h3>Bài ${displayIndex}</h3>
+                                <div class="lesson-meta">
+                                    <span>📖 ${lesson.vocabularyCount || 0} từ</span>
+                                    <span>📊 ${lesson.level}</span>
+                                </div>
+                            </div>
+                            <div class="lesson-actions">
+                                <a href="/courses/${lesson.languageCode}/${lesson.level}/lessons/${lesson.lessonIndex}" class="btn-learn">Học</a>
+                                <button class="btn-quiz" onclick="showQuizModal('regular', '${lesson.languageCode}', '${lesson.level}', ${lesson.lessonIndex})">Ôn Tập</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // Load all lessons on page load
+        searchLessons();
+        
+        // Biến lưu thông tin bài học hiện tại
+        let currentLesson = null;
+        
+        // Hiển thị modal chọn mode
+        function showQuizModal(type, ...args) {
+            if (type === 'custom') {
+                currentLesson = {
+                    type: 'custom',
+                    id: args[0]
+                };
+            } else {
+                currentLesson = {
+                    type: 'regular',
+                    languageCode: args[0],
+                    level: args[1],
+                    lessonIndex: args[2]
+                };
+            }
+            document.getElementById('quizModal').classList.add('show');
+        }
+        
+        // Đóng modal
+        function closeQuizModal() {
+            document.getElementById('quizModal').classList.remove('show');
+            currentLesson = null;
+        }
+        
+        // Bắt đầu quiz với mode đã chọn
+        function startQuiz(mode) {
+            if (!currentLesson) return;
+            
+            let quizUrl;
+            
+            if (mode === 'wrong') {
+                // Mode ôn lại từ sai
+                if (currentLesson.type === 'custom') {
+                    quizUrl = `/custom-lessons/${currentLesson.id}/quiz/practice-wrong?mode=1`;
+                } else {
+                    quizUrl = `/courses/${currentLesson.languageCode}/${currentLesson.level}/lessons/${currentLesson.lessonIndex}/quiz/practice-wrong?mode=1`;
+                }
+            } else {
+                // Mode quiz bình thường (1 hoặc 2)
+                if (currentLesson.type === 'custom') {
+                    quizUrl = `/custom-lessons/${currentLesson.id}/quiz?mode=${mode}`;
+                } else {
+                    quizUrl = `/courses/${currentLesson.languageCode}/${currentLesson.level}/lessons/${currentLesson.lessonIndex}/quiz?mode=${mode}`;
+                }
+            }
+            
+            window.location.href = quizUrl;
+        }
+        
+        // Đóng modal khi click overlay
+        document.getElementById('quizModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeQuizModal();
+            }
+        });
+        
+        document.getElementById('createLessonModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCreateLessonModal();
+            }
+        });
+        
+        // Xử lý tạo bài học
+        function showCreateLessonModal() {
+            document.getElementById('createLessonModal').classList.add('show');
+            document.getElementById('randomLessonForm').style.display = 'none';
+        }
+        
+        function closeCreateLessonModal() {
+            document.getElementById('createLessonModal').classList.remove('show');
+        }
+        
+        function showRandomLessonForm() {
+            const form = document.getElementById('randomLessonForm');
+            form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+        }
+        
+        async function createRandomLesson() {
+            const size = document.getElementById('randomLessonSize').value;
+            const level = document.getElementById('levelFilter').value || 'A1';
+            
+            if (!size || size < 1) {
+                alert('Vui lòng nhập số lượng từ hợp lệ!');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/courses/${LANGUAGE_CODE}/${level}/lessons/create?size=${size}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    closeCreateLessonModal();
+                    alert('Tạo bài học thành công!');
+                    searchLessons(); // Refresh danh sách
+                } else {
+                    const text = await response.text();
+                    alert('Lỗi: ' + text);
+                }
+            } catch (error) {
+                console.error('Error creating lesson:', error);
+                alert('Không thể tạo bài học. Vui lòng thử lại!');
+            }
+        }
+        
+        function createCustomLesson() {
+            window.location.href = '/custom-lessons/create';
+        }
+    </script>
+</body>
+</html>

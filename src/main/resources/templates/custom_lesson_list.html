@@ -217,7 +217,7 @@
                 <h3 th:text="${lesson.title}">Tên bài học</h3>
                 <p th:text="${lesson.description}">Mô tả</p>
                 <div class="lesson-meta">
-                    <span>📖 <span th:text="${lesson.vocabularies.size()}">0</span> từ</span>
+                    <span>📖 <span th:text="${lesson.vocabularyCount != null ? lesson.vocabularyCount : lesson.vocabularies.size()}">0</span> từ</span>
                     <span>🌐 <span th:text="${lesson.languageCode == 'cn' ? 'Tiếng Trung' : lesson.languageCode}">Ngôn ngữ</span></span>
                     <span>📊 <span th:text="${lesson.level}">Level</span></span>
                 </div>

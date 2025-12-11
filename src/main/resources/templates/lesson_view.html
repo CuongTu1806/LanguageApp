@@ -1,12 +1,18 @@
-<!-- src/main/resources/templates/lesson_view.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
-    <title>Bài học</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Học</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; height: 100vh; overflow: hidden; }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
         
         .container {
             display: flex;
@@ -14,78 +20,120 @@
             flex-direction: column;
         }
         
+        /* Header */
         .top-bar {
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
-            background: #2c3e50;
-            color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         .top-bar h2 {
-            font-size: 1.3em;
-            font-weight: 500;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
         }
         
         .top-bar-buttons {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
         
         .btn {
-            padding: 8px 16px;
-            border-radius: 5px;
+            padding: 10px 20px;
+            border-radius: 8px;
             border: none;
-            background: #3498db;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             cursor: pointer;
             text-decoration: none;
-            font-size: 0.9em;
-            transition: background 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-block;
         }
         
         .btn:hover {
-            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
         
         .btn-back {
-            background: #95a5a6;
+            background: #e74c3c;
         }
         
         .btn-back:hover {
-            background: #7f8c8d;
+            background: #c0392b;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+        
+        .btn-practice {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .btn-practice:hover {
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
         }
         
         .main-content {
             display: flex;
             flex: 1;
             overflow: hidden;
+            padding: 20px;
+            gap: 20px;
         }
         
         /* Cột trái: Danh sách từ */
         .word-list {
-            width: 350px;
-            border-right: 2px solid #ddd;
+            width: 380px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             overflow-y: auto;
-            background: #f8f9fa;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .word-list-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 20px 20px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
         
         .word-item {
-            padding: 15px 20px;
+            padding: 18px 20px;
             border-bottom: 1px solid #e0e0e0;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            position: relative;
         }
         
         .word-item:hover {
-            background: #e8f4f8;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+            transform: translateX(5px);
         }
         
         .word-item.active {
-            background: #3498db;
-            color: white;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+        
+        .word-item.active::before {
+            content: '▶';
+            position: absolute;
+            left: 5px;
+            color: #667eea;
+            font-size: 12px;
         }
         
         .word-item-header {
@@ -96,35 +144,48 @@
         }
         
         .word-hanzi {
-            font-size: 1.4em;
+            font-size: 20px;
             font-weight: bold;
+            color: #2c3e50;
         }
         
         .word-stats {
-            font-size: 0.75em;
-            opacity: 0.7;
+            font-size: 11px;
+            padding: 3px 8px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 12px;
+            font-weight: 600;
         }
         
-        .word-item.active .word-stats {
-            opacity: 0.9;
+        .word-stats.good {
+            background: #2ecc71;
         }
         
         .word-pinyin {
-            font-size: 0.9em;
-            color: #666;
+            font-size: 14px;
+            color: #7f8c8d;
             margin-top: 3px;
         }
         
-        .word-item.active .word-pinyin {
-            color: rgba(255,255,255,0.9);
+        .word-item.active .word-hanzi {
+            color: #667eea;
         }
         
         /* Cột phải: Chi tiết từ */
         .word-detail {
             flex: 1;
             overflow-y: auto;
-            padding: 30px 40px;
             background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .word-detail-empty {
@@ -133,123 +194,171 @@
             justify-content: center;
             height: 100%;
             color: #999;
-            font-size: 1.1em;
+            font-size: 20px;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .word-detail-empty p {
+            font-size: 18px;
+        }
+        
+        .word-detail-empty::before {
+            content: '📚';
+            font-size: 80px;
         }
         
         .word-detail-content {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
         
         .detail-main {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #eee;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #f0f0f0;
         }
         
         .detail-hanzi {
-            font-size: 3em;
+            font-size: 72px;
             font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        
-        .detail-pinyin {
-            font-size: 1.3em;
-            color: #7f8c8d;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 15px;
         }
         
+        .detail-pinyin {
+            font-size: 28px;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
         .detail-meaning {
-            font-size: 1.2em;
+            font-size: 24px;
             color: #34495e;
             line-height: 1.6;
+            font-weight: 500;
         }
         
         .detail-section {
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
         
         .detail-section-title {
-            font-size: 1.1em;
+            font-size: 20px;
             font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 2px solid #3498db;
+            color: #333;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 3px solid #667eea;
+            display: inline-block;
         }
         
         .detail-example {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
         }
         
         .example-cn {
-            font-size: 1.1em;
+            font-size: 20px;
             color: #2c3e50;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            font-weight: 500;
         }
         
         .example-vi {
-            font-size: 1em;
+            font-size: 18px;
             color: #7f8c8d;
         }
         
         .detail-image {
             text-align: center;
+            margin-top: 20px;
         }
         
         .detail-image img {
             max-width: 100%;
             max-height: 400px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         
         .detail-stats {
-            background: #e8f4f8;
-            padding: 15px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 25px;
+            border-radius: 15px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
+            gap: 20px;
             text-align: center;
         }
         
         .stat-item {
-            padding: 10px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         
         .stat-value {
-            font-size: 1.5em;
+            font-size: 36px;
             font-weight: bold;
-            color: #3498db;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .stat-label {
-            font-size: 0.9em;
+            font-size: 14px;
             color: #7f8c8d;
-            margin-top: 5px;
+            margin-top: 8px;
+            font-weight: 500;
         }
         
         /* Scrollbar styling */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
         
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
+            border-radius: 10px;
         }
         
         ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: linear-gradient(135deg, #5568d3, #6a3e8a);
+        }
+        
+        /* Empty state styling */
+        .word-list-empty {
+            padding: 30px 20px;
+            text-align: center;
+            color: #e74c3c;
+            background: #fff3cd;
+            border-radius: 10px;
+            margin: 15px;
+            font-weight: 600;
+        }
+        
+        .word-list-success {
+            padding: 15px 20px;
+            text-align: center;
+            color: #27ae60;
+            background: #d4edda;
+            font-weight: 600;
+            border-bottom: 2px solid #27ae60;
         }
     </style>
 </head>
@@ -258,26 +367,22 @@
 <div class="container">
     <!-- Top Bar -->
     <div class="top-bar">
-        <h2 th:text="'Bài ' + ${lessonNo} + ' - ' + ${lang} + ' - ' + ${level}"></h2>
+        <h2 th:text="'📚 Bài ' + ${lessonNo} + ' - ' + ${lang} + ' ' + ${level}"></h2>
         <div class="top-bar-buttons">
             <a class="btn"
                th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=1|}">
-                📝 Kiểm tra Mode 1
+                🎯 Tiếng Trung → Nghĩa
             </a>
             <a class="btn"
                th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=2|}">
-                📝 Kiểm tra Mode 2
+                🎯 Nghĩa → Tiếng Trung
             </a>
-            <a class="btn"
-               th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=3|}">
-                📝 Kiểm tra Mode 3
-            </a>
-            <a class="btn"
+            <a class="btn btn-practice"
                th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz/practice-wrong?mode=1|}">
-                🔄 Luyện lại từ sai
+                🔄 Luyện Từ Sai
             </a>
-            <a class="btn btn-back" th:href="@{|/courses/${lang}/${level}/lessons|}">
-                ← Danh sách bài
+            <a class="btn btn-back" th:href="@{|/learning/${lang}|}">
+                ← Về Dashboard
             </a>
         </div>
     </div>
@@ -286,12 +391,13 @@
     <div class="main-content">
         <!-- Cột trái: Danh sách từ -->
         <div class="word-list">
-            <!-- Debug: Hiển thị số lượng từ -->
-            <div style="padding: 10px; background: #fff3cd; border-bottom: 2px solid #ffc107;" th:if="${#lists.isEmpty(words)}">
-                ⚠️ Không có từ vựng nào trong bài này!
+            <div class="word-list-header">
+                📖 Danh Sách Từ Vựng (<span th:text="${#lists.size(words)}">0</span>)
             </div>
-            <div style="padding: 10px; background: #d4edda; border-bottom: 2px solid #28a745;" th:unless="${#lists.isEmpty(words)}">
-                ✅ Tìm thấy <span th:text="${#lists.size(words)}"></span> từ vựng
+            
+            <!-- Debug: Hiển thị số lượng từ -->
+            <div class="word-list-empty" th:if="${#lists.isEmpty(words)}">
+                ⚠️ Không có từ vựng nào trong bài này!
             </div>
             
             <div class="word-item" 
@@ -302,9 +408,10 @@
                     <span class="word-hanzi" th:text="${w.word}"></span>
                     <span class="word-stats" 
                           th:with="s=${statsMap[w.id]}"
+                          th:classappend="${s != null && s.totalAttempts > 0 && (s.wrongCount * 1.0 / s.totalAttempts) <= 0.3 ? 'good' : ''}"
                           th:text="${s != null && s.totalAttempts > 0 
                                      ? (s.wrongCount + '/' + s.totalAttempts)
-                                     : '0/0'}">
+                                     : 'Mới'}">
                     </span>
                 </div>
                 <div class="word-pinyin" th:text="${w.pronunciation}"></div>
@@ -314,7 +421,7 @@
         <!-- Cột phải: Chi tiết từ -->
         <div class="word-detail">
             <div class="word-detail-empty" id="emptyState">
-                <p>👈 Chọn một từ để xem chi tiết</p>
+                <p>Chọn một từ để xem chi tiết</p>
             </div>
             
             <div class="word-detail-content" id="detailContent" style="display: none;">

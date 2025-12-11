@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VocabularyRepository extends JpaRepository<VocabularyEntity, Long> {
 
@@ -73,7 +74,7 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntity, Lo
     /**
      * Kiểm tra từ đã tồn tại trong DB chưa (theo word và languageCode)
      */
-    VocabularyEntity findByWordAndLanguageCode(String word, String languageCode);
+    Optional<VocabularyEntity> findByWordAndLanguageCode(String word, String languageCode);
 
 }
 

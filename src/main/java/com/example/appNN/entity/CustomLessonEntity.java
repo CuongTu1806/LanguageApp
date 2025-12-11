@@ -40,6 +40,9 @@ public class CustomLessonEntity {
     @Column(name = "level", length = 10)
     private String level; // A1, A2, B1, B2...
     
+    @Column(name = "vocabulary_count")
+    private Integer vocabularyCount = 0; // Số lượng từ vựng trong bài
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     

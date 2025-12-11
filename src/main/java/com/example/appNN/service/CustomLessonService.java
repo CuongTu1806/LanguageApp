@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service xử lý custom lesson và vocabulary
@@ -28,9 +29,10 @@ public class CustomLessonService {
      * Kiểm tra từ đã tồn tại trong DB chưa
      */
     public VocabularyCheckResponse checkVocabularyExists(String word, String languageCode) {
-        VocabularyEntity existing = vocabularyRepository.findByWordAndLanguageCode(word, languageCode);
+        Optional<VocabularyEntity> existingOpt = vocabularyRepository.findByWordAndLanguageCode(word, languageCode);
         
-        if (existing != null) {
+        if (existingOpt.isPresent()) {
+            VocabularyEntity existing = existingOpt.get();
             String message = String.format(
                 "Từ '%s' đã có trong database với nghĩa: %s. Bạn có muốn sử dụng từ này không?",
                 word, existing.getMeaning()
@@ -55,12 +57,13 @@ public class CustomLessonService {
         VocabularyEntity vocab;
         
         // Kiểm tra từ đã tồn tại chưa
-        VocabularyEntity existing = vocabularyRepository.findByWordAndLanguageCode(
+        Optional<VocabularyEntity> existingOpt = vocabularyRepository.findByWordAndLanguageCode(
             request.getWord(), 
             request.getLanguageCode()
         );
         
-        if (existing != null) {
+        if (existingOpt.isPresent()) {
+            VocabularyEntity existing = existingOpt.get();
             // Từ đã tồn tại → Cập nhật các trường thiếu
             vocab = existing;
             boolean updated = false;
@@ -123,6 +126,7 @@ public class CustomLessonService {
         // Thêm vào custom lesson (nếu chưa có)
         if (!lesson.getVocabularies().contains(vocab)) {
             lesson.getVocabularies().add(vocab);
+            lesson.setVocabularyCount(lesson.getVocabularies().size()); // Cập nhật count
             customLessonRepository.save(lesson);
             log.info("Added vocabulary {} to custom lesson {}", vocab.getWord(), lesson.getTitle());
         } else {
@@ -144,6 +148,7 @@ public class CustomLessonService {
         lesson.setDescription(description);
         lesson.setLanguageCode(languageCode);
         lesson.setLevel(level);
+        lesson.setVocabularyCount(0); // Bài mới chưa có từ
         
         lesson = customLessonRepository.save(lesson);
         log.info("Created custom lesson: {} (ID: {}) for user {}", title, lesson.getId(), userId);
@@ -163,5 +168,37 @@ public class CustomLessonService {
      */
     public CustomLessonEntity getCustomLessonById(Long lessonId) {
         return customLessonRepository.findById(lessonId).orElse(null);
+    }
+    
+    /**
+     * Xóa vocabulary khỏi custom lesson
+     */
+    @Transactional
+    public void removeVocabularyFromLesson(Long lessonId, Long vocabularyId) {
+        CustomLessonEntity lesson = customLessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Custom lesson not found"));
+        
+        VocabularyEntity vocab = vocabularyRepository.findById(vocabularyId)
+                .orElseThrow(() -> new RuntimeException("Vocabulary not found"));
+        
+        if (lesson.getVocabularies().remove(vocab)) {
+            lesson.setVocabularyCount(lesson.getVocabularies().size()); // Cập nhật count
+            customLessonRepository.save(lesson);
+            log.info("Removed vocabulary {} from custom lesson {}", vocab.getWord(), lesson.getTitle());
+        }
+    }
+    
+    /**
+     * Tìm kiếm custom lesson theo số lượng từ
+     */
+    public List<CustomLessonEntity> findCustomLessonsByVocabCount(Long userId, Integer minCount, Integer maxCount) {
+        if (minCount != null && maxCount != null) {
+            return customLessonRepository.findByUserIdAndVocabularyCountBetween(userId, minCount, maxCount);
+        } else if (minCount != null) {
+            return customLessonRepository.findByUserIdAndVocabularyCountGreaterThanEqual(userId, minCount);
+        } else if (maxCount != null) {
+            return customLessonRepository.findByUserIdAndVocabularyCountLessThanEqual(userId, maxCount);
+        }
+        return List.of();
     }
 }

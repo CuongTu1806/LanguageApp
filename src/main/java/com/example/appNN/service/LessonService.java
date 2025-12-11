@@ -54,6 +54,7 @@ public class LessonService {
         lesson.setCreatedAt(LocalDateTime.now());
         lesson.setReviewStage(0);  // Bài mới bắt đầu từ stage 0
         lesson.getVocabularies().addAll(candidates);
+        lesson.setVocabularyCount(candidates.size()); // Set số lượng từ
 
         lessonRepository.save(lesson);
 
@@ -70,13 +71,39 @@ public class LessonService {
         return result;
     }
 
+    @Transactional(readOnly = true)
     public List<VocabularyEntity> getLessonWords(Long userId, String lang, String level, Integer lessonIndex) {
         LessonEntity lesson =
                 lessonRepository.findByUserIdAndLanguageCodeAndLevelAndLessonIndex(userId, lang, level, lessonIndex);
-        if (lesson == null) return List.of();
+        if (lesson == null) {
+            System.out.println("[DEBUG] getLessonWords: Lesson not found for userId=" + userId + 
+                ", lang=" + lang + ", level=" + level + ", lessonIndex=" + lessonIndex);
+            return List.of();
+        }
 
+        // Force initialize the collection within transaction
+        Set<VocabularyEntity> vocabs = lesson.getVocabularies();
+        int actualSize = vocabs.size(); // This triggers lazy loading
+        
+        // Log lesson info
+        System.out.println("[DEBUG] getLessonWords: Found lesson id=" + lesson.getId() + 
+            ", vocabularyCount field=" + lesson.getVocabularyCount() +
+            ", actual vocabularies size=" + actualSize);
+        
         // Sắp xếp theo id cho dễ nhìn
-        List<VocabularyEntity> list = new ArrayList<>(lesson.getVocabularies());
+        List<VocabularyEntity> list = new ArrayList<>(vocabs);
+        
+        // Log first few words
+        if (!list.isEmpty()) {
+            System.out.println("[DEBUG] First 3 words in lesson:");
+            for (int i = 0; i < Math.min(3, list.size()); i++) {
+                VocabularyEntity v = list.get(i);
+                System.out.println("  - id=" + v.getId() + ", word=" + v.getWord() + ", meaning=" + v.getMeaning());
+            }
+        } else {
+            System.out.println("[DEBUG] WARNING: vocabularies collection is empty but vocabularyCount=" + lesson.getVocabularyCount());
+        }
+        
         list.sort(Comparator.comparing(VocabularyEntity::getId));
         return list;
     }
@@ -147,6 +174,20 @@ public class LessonService {
     public List<LessonEntity> getDueLessons(Long userId) {
         LocalDateTime now = LocalDateTime.now();
         return lessonRepository.findDueLessons(userId, now);
+    }
+
+    /**
+     * Tìm kiếm lesson theo số lượng từ
+     */
+    public List<LessonEntity> findLessonsByVocabCount(Long userId, Integer minCount, Integer maxCount) {
+        if (minCount != null && maxCount != null) {
+            return lessonRepository.findByUserIdAndVocabularyCountBetween(userId, minCount, maxCount);
+        } else if (minCount != null) {
+            return lessonRepository.findByUserIdAndVocabularyCountGreaterThanEqual(userId, minCount);
+        } else if (maxCount != null) {
+            return lessonRepository.findByUserIdAndVocabularyCountLessThanEqual(userId, maxCount);
+        }
+        return List.of();
     }
 
 
