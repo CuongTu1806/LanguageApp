@@ -16,23 +16,20 @@ public interface LessonRepository extends JpaRepository<LessonEntity, Long> {
             "AND l.languageCode = :lang " +
             "AND l.level = :level")
     Integer findMaxLessonIndex(@Param("userId") Long userId,
-                               @Param("lang") String languageCode,
-                               @Param("level") String level);
+                               @Param("lang") String languageCode);
 
     List<LessonEntity> findByUserIdAndLanguageCodeAndLevelOrderByLessonIndex(
             Long userId, String languageCode, String level
     );
 
     @Query("SELECT l FROM LessonEntity l " +
-           "LEFT JOIN FETCH l.vocabularies " +
            "WHERE l.user.id = :userId " +
            "AND l.languageCode = :lang " +
            "AND l.level = :level " +
            "AND l.lessonIndex = :lessonIndex")
-    LessonEntity findByUserIdAndLanguageCodeAndLevelAndLessonIndex(
+    LessonEntity findByUserIdAndLanguageCodeAndLessonIndex(
             @Param("userId") Long userId, 
-            @Param("lang") String languageCode, 
-            @Param("level") String level, 
+            @Param("lang") String languageCode,
             @Param("lessonIndex") Integer lessonIndex
     );
 
@@ -47,6 +44,28 @@ public interface LessonRepository extends JpaRepository<LessonEntity, Long> {
     """)
     List<LessonEntity> findDueLessons(@Param("userId") Long userId,
                                       @Param("until") LocalDateTime until);
+    
+    // Lấy tất cả bài tập có hạn <= deadline (bao gồm quá hạn và sắp tới)
+    @Query("""
+    SELECT l FROM LessonEntity l
+    WHERE l.user.id = :userId
+      AND l.nextReviewAt IS NOT NULL
+      AND l.nextReviewAt <= :deadline
+    ORDER BY l.nextReviewAt ASC
+    """)
+    List<LessonEntity> findAllDueLessons(
+            @Param("userId") Long userId,
+            @Param("deadline") LocalDateTime deadline
+    );
+    
+    // Đếm số bài tập quá hạn
+    @Query("""
+    SELECT COUNT(l) FROM LessonEntity l
+    WHERE l.user.id = :userId
+      AND l.nextReviewAt IS NOT NULL
+      AND l.nextReviewAt < :now
+    """)
+    long countOverdueLessons(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
     // Tìm kiếm lesson theo số lượng từ
     List<LessonEntity> findByUserIdAndVocabularyCountBetween(
@@ -63,5 +82,13 @@ public interface LessonRepository extends JpaRepository<LessonEntity, Long> {
     
     // Tìm tất cả lesson của user
     List<LessonEntity> findByUserId(Long userId);
+    
+    // Đếm số lesson của user theo ngôn ngữ và level
+    Long countByUserIdAndLanguageCode(Long userId, String languageCode);
+    
+    // Tìm lesson theo type
+    List<LessonEntity> findByUserIdAndLessonType(Long userId, String lessonType);
+    
+    List<LessonEntity> findByUserIdAndLessonTypeOrderByCreatedAtDesc(Long userId, String lessonType);
 
 }

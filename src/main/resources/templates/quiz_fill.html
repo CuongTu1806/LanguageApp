@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điền Từ Vựng</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        /* Header Card */
+        .header-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .header-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .header-subtitle {
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .progress-info {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .answered-count {
+            color: #667eea;
+        }
+        
+        .progress-bar-container {
+            flex: 1;
+            margin: 0 20px;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        /* Questions List */
+        .questions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .question-item {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .question-item:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .question-item.filled {
+            border-left: 5px solid #2ecc71;
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .question-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            background: #f0f3ff;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        
+        .fill-status {
+            font-size: 20px;
+        }
+        
+        .question-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .answer-input-container {
+            position: relative;
+        }
+        
+        .answer-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-family: 'SimSun', 'Microsoft YaHei', sans-serif;
+        }
+        
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .answer-input.filled {
+            border-color: #2ecc71;
+            background: #f0fff4;
+        }
+        
+        .char-count {
+            position: absolute;
+            right: 15px;
+            bottom: -25px;
+            font-size: 12px;
+            color: #999;
+        }
+        
+        /* Submit Button */
+        .submit-container {
+            position: sticky;
+            bottom: 20px;
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn-submit {
+            flex: 1;
+            padding: 18px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-exit {
+            padding: 18px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-exit:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        /* Helper Tips */
+        .tips-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .tips-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tips-list {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .tips-list li {
+            margin-left: 20px;
+            margin-bottom: 5px;
+        }
+        
+        /* Scroll to Top Button */
+        .scroll-top {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .scroll-top:hover {
+            background: #764ba2;
+            transform: translateY(-3px);
+        }
+        
+        .scroll-top.show {
+            display: flex;
+        }
+        
+        /* Animation */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .question-item {
+            animation: slideIn 0.3s ease-out backwards;
+        }
+        
+        .question-item:nth-child(1) { animation-delay: 0.05s; }
+        .question-item:nth-child(2) { animation-delay: 0.10s; }
+        .question-item:nth-child(3) { animation-delay: 0.15s; }
+        .question-item:nth-child(4) { animation-delay: 0.20s; }
+        .question-item:nth-child(5) { animation-delay: 0.25s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header-card">
+            <div class="header-title">📝 Điền Từ Vựng</div>
+            <div class="header-subtitle">Nhập từ tiếng Trung tương ứng với nghĩa tiếng Việt</div>
+            
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span class="answered-count" id="answeredCount">0</span> / 
+                    <span th:text="${questions.size()}">10</span> câu
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="progress-info" id="progressPercent">0%</div>
+            </div>
+        </div>
+        
+        <!-- Tips -->
+        <div class="tips-card">
+            <div class="tips-title">💡 Mẹo làm bài</div>
+            <ul class="tips-list">
+                <li>Nhấn <strong>Enter</strong> để chuyển sang câu tiếp theo</li>
+                <li>Có thể quay lại sửa câu trước bất kỳ lúc nào</li>
+                <li>Bài làm được <strong>tự động lưu</strong> khi bạn nhập</li>
+                <li>Kiểm tra kỹ trước khi nộp bài</li>
+            </ul>
+        </div>
+        
+        <!-- Quiz Form -->
+        <form th:action="@{/lessons/{id}/quiz/submit(id=${lessonId})}" 
+              method="post" 
+              id="quizForm">
+            
+            <!-- Hidden fields -->
+            <input type="hidden" name="isPractice" th:value="${isPractice != null ? isPractice : false}" />
+            
+            <!-- Questions List -->
+            <div class="questions-list">
+                <div class="question-item" 
+                     th:each="q, stat : ${questions}"
+                     th:data-index="${stat.index}">
+                    
+                    <div class="question-header">
+                        <span class="question-number" th:text="'Câu ' + ${stat.index + 1}">Câu 1</span>
+                        <span class="fill-status">⭕</span>
+                    </div>
+                    
+                    <div class="question-text" th:text="${q.questionText}">Xin chào</div>
+                    
+                    <div class="answer-input-container">
+                        <input type="text" 
+                               class="answer-input" 
+                               th:name="'answer' + ${stat.index}"
+                               th:id="'answer' + ${stat.index}"
+                               th:data-index="${stat.index}"
+                               placeholder="Nhập từ tiếng Trung..."
+                               autocomplete="off"
+                               spellcheck="false">
+                        <span class="char-count" th:id="'count' + ${stat.index}">0 ký tự</span>
+                    </div>
+                    
+                    <!-- Hidden correct answer for comparison (optional) -->
+                    <input type="hidden" th:id="'correct' + ${stat.index}" th:value="${q.correctAnswer}">
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="submit-container">
+                <a th:href="@{|/learning/${lang}|}" class="btn-exit">❌ Thoát</a>
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    ✅ Nộp Bài (<span id="submitCount">0</span>/<span th:text="${questions.size()}">10</span>)
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Scroll to Top Button -->
+    <div class="scroll-top" id="scrollTop" onclick="scrollToTop()">
+        ↑
+    </div>
+    
+    <script>
+        const totalQuestions = parseInt(document.querySelector('.progress-info span:nth-child(2)').textContent);
+        let answeredCount = 0;
+        
+        // Create unique key for this quiz
+        const lang = /*[[${lang}]]*/ 'cn';
+        const level = /*[[${level}]]*/ 'A1';
+        const lessonNo = /*[[${lessonNo}]]*/ 1;
+        const mode = /*[[${mode}]]*/ 4;
+        const isCustomLesson = /*[[${isCustomLesson}]]*/ false;
+        const quizKey = `quizFill_${isCustomLesson ? 'custom' : 'lesson'}_${lang}_${level}_${lessonNo}_${mode}`;
+        
+        // Get all input fields
+        const inputs = document.querySelectorAll('.answer-input');
+        
+        // Check if there are saved answers and ask user
+        const saved = localStorage.getItem(quizKey);
+        if (saved) {
+            const confirmed = confirm('Bạn có bài làm dở trước đó. Bạn muốn tiếp tục làm bài cũ hay làm lại từ đầu?\n\nNhấn OK để tiếp tục, Cancel để làm lại.');
+            if (confirmed) {
+                loadSavedAnswers();
+            } else {
+                localStorage.removeItem(quizKey);
+            }
+        }
+        
+        // Add event listeners to all inputs
+        inputs.forEach((input, index) => {
+            // Update on input
+            input.addEventListener('input', function() {
+                updateProgress();
+                updateQuestionStatus(index);
+                updateCharCount(index);
+                saveAnswers();
+            });
+            
+            // Enter key to next question
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const nextInput = inputs[index + 1];
+                    if (nextInput) {
+                        nextInput.focus();
+                        nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+            
+            // Initial status check
+            updateQuestionStatus(index);
+            updateCharCount(index);
+        });
+        
+        // Update progress bar
+        function updateProgress() {
+            answeredCount = 0;
+            inputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    answeredCount++;
+                }
+            });
+            
+            const percentage = Math.round((answeredCount / totalQuestions) * 100);
+            
+            document.getElementById('answeredCount').textContent = answeredCount;
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressPercent').textContent = percentage + '%';
+            document.getElementById('submitCount').textContent = answeredCount;
+        }
+        
+        // Update question item status
+        function updateQuestionStatus(index) {
+            const input = inputs[index];
+            const questionItem = input.closest('.question-item');
+            const statusIcon = questionItem.querySelector('.fill-status');
+            
+            if (input.value.trim() !== '') {
+                questionItem.classList.add('filled');
+                input.classList.add('filled');
+                statusIcon.textContent = '✅';
+            } else {
+                questionItem.classList.remove('filled');
+                input.classList.remove('filled');
+                statusIcon.textContent = '⭕';
+            }
+        }
+        
+        // Update character count
+        function updateCharCount(index) {
+            const input = inputs[index];
+            const count = input.value.length;
+            document.getElementById('count' + index).textContent = count + ' ký tự';
+        }
+        
+        // Save answers to localStorage
+        function saveAnswers() {
+            const answers = {};
+            inputs.forEach((input, index) => {
+                answers[index] = input.value;
+            });
+            localStorage.setItem(quizKey, JSON.stringify(answers));
+        }
+        
+        // Load saved answers from localStorage
+        function loadSavedAnswers() {
+            const saved = localStorage.getItem(quizKey);
+            if (saved) {
+                const answers = JSON.parse(saved);
+                inputs.forEach((input, index) => {
+                    if (answers[index]) {
+                        input.value = answers[index];
+                    }
+                });
+                updateProgress();
+            }
+        }
+        
+        // Clear saved answers on submit
+        document.getElementById('quizForm').addEventListener('submit', function() {
+            localStorage.removeItem(quizKey);
+        });
+        
+        // Scroll to top functionality
+        window.addEventListener('scroll', function() {
+            const scrollTop = document.getElementById('scrollTop');
+            if (window.pageYOffset > 300) {
+                scrollTop.classList.add('show');
+            } else {
+                scrollTop.classList.remove('show');
+            }
+        });
+        
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Focus first input on load
+        if (inputs.length > 0) {
+            inputs[0].focus();
+        }
+        
+        // Initial progress update
+        updateProgress();
+        
+        // Warn before leaving if answers not submitted
+        window.addEventListener('beforeunload', function(e) {
+            if (answeredCount > 0 && localStorage.getItem(quizKey)) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>

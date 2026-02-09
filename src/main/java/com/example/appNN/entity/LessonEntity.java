@@ -1,5 +1,6 @@
 package com.example.appNN.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,6 +14,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class LessonEntity {
 
     @Id
@@ -33,6 +35,9 @@ public class LessonEntity {
     @Column(name = "lesson_index")
     private Integer lessonIndex;   // Bài thứ mấy của user trong khóa này
 
+    @Column(name = "display_order")
+    private Integer displayOrder;  // Số thứ tự hiển thị (1, 2, 3...)
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -45,12 +50,36 @@ public class LessonEntity {
     @Column(name = "next_review_at")
     private LocalDateTime nextReviewAt;
 
-    // Các từ trong bài
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "lesson_vocabulary",
-            joinColumns = @JoinColumn(name = "lesson_id"),
-            inverseJoinColumns = @JoinColumn(name = "vocab_id")
-    )
-    private Set<VocabularyEntity> vocabularies = new HashSet<>();
+    @Column(name = "lesson_type", length = 20)
+    private String lessonType = "system"; // 'system' hoặc 'personal'
+
+    @Column(name = "title", length = 200)
+    private String title; // Tiêu đề bài học (cho personal lesson)
+
+    @Column(name = "description", length = 500)
+    private String description; // Mô tả bài học (cho personal lesson)
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    // Các từ trong bài - không dùng ManyToMany nữa vì cần hỗ trợ user_vocabulary
+    // Sẽ query qua LessonVocabularyRepository
+    @Transient
+    public Set<VocabularyEntity> getVocabularies() {
+        // Placeholder - sẽ query qua service
+        return new HashSet<>();
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

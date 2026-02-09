@@ -31,6 +31,9 @@ public class LessonQuizAttemptEntity {
     @Column(name = "mode")
     private String mode; // lưu QuizMode.name()
 
+    @Column(name = "attempt_type")
+    private String attemptType; // REVIEW_TEST hoặc PRACTICE
+
     private int score;
     private int total;
 

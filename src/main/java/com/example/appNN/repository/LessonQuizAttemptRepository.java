@@ -25,4 +25,12 @@ public interface LessonQuizAttemptRepository extends JpaRepository<LessonQuizAtt
             @Param("level") String level,
             @Param("lessonNo") Integer lessonNo
     );
+    
+    // Lịch sử quiz cho 1 lesson theo lessonId
+    @Query("""
+        SELECT a FROM LessonQuizAttemptEntity a
+        WHERE a.lesson.id = :lessonId
+        ORDER BY a.createdAt DESC
+    """)
+    List<LessonQuizAttemptEntity> findByLessonId(@Param("lessonId") Long lessonId);
 }

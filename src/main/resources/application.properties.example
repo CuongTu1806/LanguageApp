@@ -1,0 +1,28 @@
+spring.application.name=demo
+
+
+# ===============================
+# DATABASE CONFIGURATION
+# ===============================
+spring.datasource.url=jdbc:mysql://localhost:3306/TiengTrungDB?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# ===============================
+# JPA / HIBERNATE
+# ===============================
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# ===============================
+# PIXABAY API CONFIGURATION
+# ===============================
+# Đăng ký API key miễn phí tại: https://pixabay.com/api/docs/
+pixabay.api.key=your_pixabay_api_key
+pixabay.api.url=https://pixabay.com/api/
+
+# Thư mục lưu hình ảnh tải về
+image.storage.path=src/main/resources/static/images/vocab

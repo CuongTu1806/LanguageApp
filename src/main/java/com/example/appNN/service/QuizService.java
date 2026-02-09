@@ -3,6 +3,7 @@ package com.example.appNN.service;
 
 import com.example.appNN.dto.QuizQuestionDto;
 import com.example.appNN.dto.QuizResultDto;
+import com.example.appNN.dto.VocabularyDto;
 import com.example.appNN.entity.*;
 import com.example.appNN.model.QuizMode;
 import com.example.appNN.repository.*;
@@ -23,30 +24,30 @@ public class QuizService {
     private final AppUserRepository appUserRepository;
     private final LessonQuizAttemptRepository attemptRepository;
     private final LessonQuizWrongVocabRepository wrongVocabRepository;
+    private final UserVocabularyRepository userVocabularyRepository;
+    private final LessonVocabularyRepository lessonVocabularyRepository;
 
     /**
      * Tạo danh sách câu hỏi quiz cho 1 bài học.
      */
-    public List<QuizQuestionDto> buildQuizForLesson(Long userId,
-                                                    String lang,
-                                                    String level,
-                                                    Integer lessonNo,
-                                                    QuizMode mode) {
-
+    public List<QuizQuestionDto> buildQuizForLesson(Long lessonId, QuizMode mode) {
+        // Lấy lesson để biết languageCode
+        LessonEntity lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Lesson not found: " + lessonId));
+        
         // Từ của bài này
-        List<VocabularyEntity> lessonWords =
-                lessonService.getLessonWords(userId, lang, level, lessonNo);
+        List<VocabularyDto> lessonWords = lessonService.getLessonWords(lessonId);
 
         // Toàn bộ từ trong course (để chọn đáp án sai)
         List<VocabularyEntity> pool =
-                vocabularyRepository.findByLanguageCodeAndLevel(lang, level);
+                vocabularyRepository.findByLanguageCode(lesson.getLanguageCode());
 
         Random random = new Random();
         List<QuizQuestionDto> questions = new ArrayList<>();
 
-        for (VocabularyEntity v : lessonWords) {
+        for (VocabularyDto v : lessonWords) {
             QuizQuestionDto q = new QuizQuestionDto();
-            q.setVocabId(v.getId());
+            q.setVocabId(v.getRealVocabId());
 
             // Xác định câu hỏi + đáp án đúng theo mode
             String questionText;
@@ -69,7 +70,9 @@ public class QuizService {
                     break;
 
                 case MEANING_TO_WORD:
+                case FILL_IN:
                     // C3: meaning -> word
+                    // C4: meaning -> word (fill in)
                     questionText = v.getMeaning();
                     correct = v.getWord();
                     break;
@@ -88,11 +91,13 @@ public class QuizService {
 
             while (optionsSet.size() < 4 && optionsSet.size() < pool.size()) {
                 VocabularyEntity candidate = pool.get(random.nextInt(pool.size()));
-                if (Objects.equals(candidate.getId(), v.getId())) continue; // tránh chính nó
+                // Tránh trùng với từ hiện tại - so sánh với ID thật của vocab
+                if (Objects.equals(candidate.getId(), v.getSystemVocabId())) continue;
 
                 String wrong;
                 switch (mode) {
                     case MEANING_TO_WORD:
+                    case FILL_IN:
                         wrong = candidate.getWord();
                         break;
                     default:
@@ -159,26 +164,22 @@ public class QuizService {
 
     @Transactional
     public LessonQuizAttemptEntity saveAttempt(Long userId,
-                                               String lang,
-                                               String level,
-                                               Integer lessonNo,
+                                               Long lessonId,
                                                QuizMode mode,
-                                               QuizResultDto result) {
+                                               QuizResultDto result,
+                                               String attemptType) {
 
         AppUserEntity user = appUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
-        LessonEntity lesson = lessonRepository
-                .findByUserIdAndLanguageCodeAndLevelAndLessonIndex(userId, lang, level, lessonNo);
-
-        if (lesson == null) {
-            throw new RuntimeException("Lesson not found for quiz");
-        }
+        LessonEntity lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Lesson not found: " + lessonId));
 
         LessonQuizAttemptEntity attempt = new LessonQuizAttemptEntity();
         attempt.setUser(user);
         attempt.setLesson(lesson);
         attempt.setMode(mode.name());
+        attempt.setAttemptType(attemptType); // REVIEW_TEST hoặc PRACTICE
         attempt.setScore(result.getScore());
         attempt.setTotal(result.getTotal());
         attempt.setCreatedAt(java.time.LocalDateTime.now());
@@ -209,13 +210,22 @@ public class QuizService {
             Long userId, String lang, String level, Integer lessonNo) {
         return attemptRepository.findByUserAndLesson(userId, lang, level, lessonNo);
     }
+    
+    // Lấy lịch sử theo lessonId
+    public java.util.List<LessonQuizAttemptEntity> getAttemptsForLesson(Long lessonId) {
+        return attemptRepository.findByLessonId(lessonId);
+    }
 
     // Luyện tập các từ sai trong bài
     public java.util.List<QuizQuestionDto> buildPracticeFromWrong(
-            Long userId, String lang, String level, Integer lessonNo, QuizMode mode) {
+            Long userId, Long lessonId, QuizMode mode) {
+        
+        // Lấy lesson để biết languageCode
+        LessonEntity lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Lesson not found: " + lessonId));
 
         java.util.List<Long> wrongIds =
-                wrongVocabRepository.findDistinctWrongVocabIdsForLesson(userId, lang, level, lessonNo);
+                wrongVocabRepository.findDistinctWrongVocabIdsForLessonId(lessonId);
 
         if (wrongIds.isEmpty()) {
             return java.util.List.of();
@@ -225,7 +235,7 @@ public class QuizService {
 
         // pool để lấy đáp án sai vẫn là toàn bộ từ trong course
         java.util.List<VocabularyEntity> pool =
-                vocabularyRepository.findByLanguageCodeAndLevel(lang, level);
+                vocabularyRepository.findByLanguageCode(lesson.getLanguageCode());
 
         java.util.List<QuizQuestionDto> questions = new java.util.ArrayList<>();
         java.util.Random random = new java.util.Random();
@@ -238,7 +248,7 @@ public class QuizService {
             String correct;
 
             switch (mode) {
-                case MEANING_TO_WORD -> {
+                case MEANING_TO_WORD, FILL_IN -> {
                     questionText = v.getMeaning();
                     correct = v.getWord();
                 }
@@ -269,7 +279,7 @@ public class QuizService {
                 if (java.util.Objects.equals(c.getId(), v.getId())) continue;
                 String wrong;
                 switch (mode) {
-                    case MEANING_TO_WORD -> wrong = c.getWord();
+                    case MEANING_TO_WORD, FILL_IN -> wrong = c.getWord();
                     default -> wrong = c.getMeaning();
                 }
                 if (wrong != null && !wrong.isBlank()) opts.add(wrong);
@@ -283,5 +293,139 @@ public class QuizService {
         }
 
         return questions;
+    }
+
+    /**
+     * Tạo quiz cho personal lesson (thay thế buildQuizForCustomLesson)
+     */
+    public List<QuizQuestionDto> buildQuizForPersonalLesson(Long userId, LessonEntity lesson, QuizMode mode) {
+        // Lấy tất cả vocabulary của personal lesson từ LessonService
+        List<VocabularyDto> vocabDtos = lessonService.getAllVocabulariesForLessonAsDto(lesson.getId());
+        
+        if (vocabDtos.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Toàn bộ từ trong cùng languageCode và level để chọn đáp án sai
+        List<VocabularyEntity> pool = vocabularyRepository.findByLanguageCode(
+            lesson.getLanguageCode()
+        );
+
+        Random random = new Random();
+        List<QuizQuestionDto> questions = new ArrayList<>();
+
+        for (VocabularyDto dto : vocabDtos) {
+            QuizQuestionDto q = new QuizQuestionDto();
+            q.setVocabId(dto.getId());
+
+            // Xác định câu hỏi + đáp án đúng theo mode
+            String questionText;
+            String correct;
+
+            switch (mode) {
+                case WORD_PRON_TO_MEANING:
+                    questionText = dto.getWord()
+                            + (dto.getPronunciation() != null && !dto.getPronunciation().isBlank()
+                            ? " (" + dto.getPronunciation() + ")"
+                            : "");
+                    correct = dto.getMeaning();
+                    break;
+
+                case WORD_TO_MEANING:
+                    questionText = dto.getWord();
+                    correct = dto.getMeaning();
+                    break;
+
+                case MEANING_TO_WORD:
+                case FILL_IN:
+                    questionText = dto.getMeaning();
+                    correct = dto.getWord();
+                    break;
+
+                default:
+                    questionText = dto.getWord();
+                    correct = dto.getMeaning();
+            }
+
+            q.setQuestionText(questionText);
+            q.setCorrectAnswer(correct);
+
+            // Tạo 4 lựa chọn
+            Set<String> optionsSet = new LinkedHashSet<>();
+            optionsSet.add(correct);
+
+            while (optionsSet.size() < 4 && optionsSet.size() < pool.size()) {
+                VocabularyEntity candidate = pool.get(random.nextInt(pool.size()));
+                if (Objects.equals(candidate.getId(), dto.getId())) continue;
+
+                String wrong;
+                switch (mode) {
+                    case MEANING_TO_WORD:
+                    case FILL_IN:
+                        wrong = candidate.getWord();
+                        break;
+                    default:
+                        wrong = candidate.getMeaning();
+                }
+
+                if (wrong != null && !wrong.isBlank()) {
+                    optionsSet.add(wrong);
+                }
+            }
+
+            List<String> options = new ArrayList<>(optionsSet);
+            Collections.shuffle(options, random);
+            q.setOptions(options);
+
+            questions.add(q);
+        }
+
+        return questions;
+    }
+
+    /**
+     * Lưu kết quả quiz cho personal lesson (thay thế saveCustomLessonAttempt)
+     */
+    @Transactional
+    public LessonQuizAttemptEntity savePersonalLessonAttempt(Long userId,
+                                                              Long lessonId,
+                                                              QuizMode mode,
+                                                              QuizResultDto result,
+                                                              String attemptType) {
+
+        AppUserEntity user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+
+        LessonEntity lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Lesson not found: " + lessonId));
+
+        LessonQuizAttemptEntity attempt = new LessonQuizAttemptEntity();
+        attempt.setUser(user);
+        attempt.setLesson(lesson);
+        attempt.setMode(mode.name());
+        attempt.setAttemptType(attemptType); // REVIEW_TEST hoặc PRACTICE
+        attempt.setScore(result.getScore());
+        attempt.setTotal(result.getTotal());
+        attempt.setCreatedAt(java.time.LocalDateTime.now());
+
+        attempt = attemptRepository.save(attempt);
+
+        // Lưu các từ sai
+        for (Long vocabId : result.getWrongVocabIds()) {
+            VocabularyEntity vocab = vocabularyRepository.findById(vocabId)
+                    .orElse(null);
+
+            if (vocab == null) continue;
+
+            LessonQuizWrongVocabId id = new LessonQuizWrongVocabId(attempt.getId(), vocab.getId());
+            LessonQuizWrongVocabEntity w = new LessonQuizWrongVocabEntity();
+            w.setId(id);
+            w.setAttempt(attempt);
+            w.setVocabulary(vocab);
+
+            wrongVocabRepository.save(w);
+        }
+
+        return attempt;
     }
 }

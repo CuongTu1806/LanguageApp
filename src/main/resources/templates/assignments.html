@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Tập Tới Hạn</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .back-btn {
+            padding: 12px 24px;
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+        
+        .overdue-alert {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.3);
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .overdue-alert .icon {
+            font-size: 32px;
+        }
+        
+        .assignments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .assignment-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .assignment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+        
+        .assignment-card.overdue::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+        }
+        
+        .assignment-card.due-today::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff9800, #ff6f00);
+        }
+        
+        .assignment-card.upcoming::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+        }
+        
+        .assignment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .assignment-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .custom-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.overdue {
+            background: #ffebee;
+            color: #e74c3c;
+        }
+        
+        .status-badge.due-today {
+            background: #fff9e6;
+            color: #ff9800;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-badge.upcoming {
+            background: #fff3e0;
+            color: #f39c12;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .assignment-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .info-row .icon {
+            font-size: 18px;
+            width: 24px;
+        }
+        
+        .info-row .label {
+            font-weight: 600;
+            color: #34495e;
+            min-width: 80px;
+        }
+        
+        .due-date {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .due-date.overdue {
+            color: #e74c3c;
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
+        }
+        
+        .action-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .empty-state {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .empty-state .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+        
+        .review-stage {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>📝 Bài Tập Tới Hạn</h1>
+        <a href="javascript:history.back()" class="back-btn">← Quay lại</a>
+    </div>
+    
+    <div th:if="${overdueCount > 0}" class="overdue-alert">
+        <span class="icon">⚠️</span>
+        <span>Bạn có <strong th:text="${overdueCount}">0</strong> bài tập đã quá hạn cần hoàn thành!</span>
+    </div>
+    
+    <div class="assignments-grid" th:if="${!upcomingLessons.isEmpty() || !upcomingCustomLessons.isEmpty()}">
+        <!-- System Lessons -->
+        <div th:each="lesson, iterStat : ${upcomingLessons}" 
+             class="assignment-card" 
+             th:classappend="${lesson.nextReviewAt.isBefore(T(java.time.LocalDateTime).now()) ? 'overdue' : (#temporals.format(lesson.nextReviewAt, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd') ? 'due-today' : 'upcoming')}">
+            
+            <div class="assignment-header">
+                <div class="assignment-title">
+                    <span th:text="${lesson.languageCode == 'cn' ? '🇨🇳' : '🇻🇳'}"></span>
+                    <span th:text="'Bài ' + ${lesson.lessonIndex}"></span>
+                </div>
+                <span class="status-badge" 
+                      th:classappend="${lesson.nextReviewAt.isBefore(T(java.time.LocalDateTime).now()) ? 'overdue' : (#temporals.format(lesson.nextReviewAt, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd') ? 'due-today' : 'upcoming')}"
+                      th:text="${lesson.nextReviewAt.isBefore(T(java.time.LocalDateTime).now()) ? 'Quá hạn' : (#temporals.format(lesson.nextReviewAt, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd') ? 'Tới hạn' : 'Sắp tới')}">
+                </span>
+            </div>
+            
+            <div class="due-date" 
+                 th:classappend="${lesson.nextReviewAt.isBefore(T(java.time.LocalDateTime).now()) ? 'overdue' : ''}">
+                ⏰ Hạn nộp: <span th:text="${#temporals.format(lesson.nextReviewAt, 'dd/MM/yyyy HH:mm')}"></span>
+            </div>
+            
+            <div class="assignment-info">
+                <div class="info-row">
+                    <span class="icon">🌍</span>
+                    <span class="label">Ngôn ngữ:</span>
+                    <span th:text="${lesson.languageCode == 'cn' ? 'Tiếng Trung' : lesson.languageCode}"></span>
+                </div>
+                <div class="info-row">
+                    <span class="icon">📊</span>
+                    <span class="label">Cấp độ:</span>
+                    <span th:text="${lesson.level}"></span>
+                </div>
+                <div class="info-row">
+                    <span class="icon">📚</span>
+                    <span class="label">Số từ:</span>
+                    <span th:text="${lesson.vocabularyCount} + ' từ'"></span>
+                </div>
+                <div class="info-row">
+                    <span class="icon">🔄</span>
+                    <span class="label">Lần ôn:</span>
+                    <span class="review-stage" th:text="'Lần ' + ${lesson.reviewStage}"></span>
+                </div>
+            </div>
+            
+            <a th:href="@{/lessons/{id}/quiz(id=${lesson.id}, isReviewTest=true)}" 
+               class="action-btn">
+                🚀 Làm bài ngay
+            </a>
+        </div>
+        
+        <!-- Custom Lessons -->
+        <div th:each="customLesson : ${upcomingCustomLessons}" 
+             class="assignment-card" 
+             th:classappend="${customLesson.nextReviewAt.isBefore(T(java.time.LocalDateTime).now()) ? 'overdue' : (#temporals.format(customLesson.nextReviewAt, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd') ? 'due-today' : 'upcoming')}">
+            
+            <div class="assignment-header">
+                <div class="assignment-title">
+                    <span th:text="${customLesson.languageCode == 'cn' ? '🇨🇳' : '🇻🇳'}"></span>
+                    <span th:text="${customLesson.title}"></span>
+                    <span class="custom-badge">✨ Tùy chỉnh</span>
+                </div>
+                <span class="status-badge" 
+                      th:classappend="${customLesson.nextReviewAt.isBefore(T(java.time.LocalDateTime).now()) ? 'overdue' : (#temporals.format(customLesson.nextReviewAt, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd') ? 'due-today' : 'upcoming')}"
+                      th:text="${customLesson.nextReviewAt.isBefore(T(java.time.LocalDateTime).now()) ? 'Quá hạn' : (#temporals.format(customLesson.nextReviewAt, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd') ? 'Tới hạn' : 'Sắp tới')}">
+                </span>
+            </div>
+            
+            <div class="due-date" 
+                 th:classappend="${customLesson.nextReviewAt.isBefore(T(java.time.LocalDateTime).now()) ? 'overdue' : ''}">
+                ⏰ Hạn nộp: <span th:text="${#temporals.format(customLesson.nextReviewAt, 'dd/MM/yyyy HH:mm')}"></span>
+            </div>
+            
+            <div class="assignment-info">
+                <div class="info-row">
+                    <span class="icon">🌍</span>
+                    <span class="label">Ngôn ngữ:</span>
+                    <span th:text="${customLesson.languageCode == 'cn' ? 'Tiếng Trung' : 'Tiếng Việt'}"></span>
+                </div>
+                <div class="info-row">
+                    <span class="icon">📊</span>
+                    <span class="label">Cấp độ:</span>
+                    <span th:text="${customLesson.level}"></span>
+                </div>
+                <div class="info-row">
+                    <span class="icon">📚</span>
+                    <span class="label">Số từ:</span>
+                    <span th:text="${customLesson.vocabularyCount} + ' từ'"></span>
+                </div>
+                <div class="info-row">
+                    <span class="icon">🔄</span>
+                    <span class="label">Lần ôn:</span>
+                    <span class="review-stage" th:text="'Lần ' + ${customLesson.reviewStage}"></span>
+                </div>
+            </div>
+            
+            <a th:href="@{/custom-lessons/{id}/quiz(id=${customLesson.id}, isReviewTest=true)}" 
+               class="action-btn">
+                🚀 Làm bài ngay
+            </a>
+        </div>
+    </div>
+    
+    <div th:if="${upcomingLessons.isEmpty() && upcomingCustomLessons.isEmpty()}" class="empty-state">
+        <div class="icon">🎉</div>
+        <h2>Tuyệt vời!</h2>
+        <p>Bạn không có bài tập nào tới hạn trong 7 ngày tới.</p>
+    </div>
+</div>
+
+</body>
+</html>

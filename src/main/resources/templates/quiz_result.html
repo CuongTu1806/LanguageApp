@@ -373,10 +373,33 @@
         
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <a th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}|}" class="btn-action btn-secondary">
-                📚 Về Bài Học
+            <!-- Về Trang Learning -->
+            <a th:href="@{|/learning/${lang}|}" 
+               class="btn-action btn-secondary">
+                🏠 Về Trang Learning
             </a>
-            <a th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=1|}" class="btn-action btn-primary">
+            
+            <!-- Ôn Lại (về trang bài học) -->
+            <a th:if="${isCustomLesson == null or !isCustomLesson}"
+               th:href="@{/lessons/{id}(id=${lessonId})}" 
+               class="btn-action btn-secondary">
+                📖 Ôn Lại
+            </a>
+            <a th:if="${isCustomLesson != null and isCustomLesson}"
+               th:href="@{|/custom-lessons/${lessonId}|}" 
+               class="btn-action btn-secondary">
+                📖 Ôn Lại
+            </a>
+            
+            <!-- Làm Lại Quiz -->
+            <a th:if="${isCustomLesson == null or !isCustomLesson}"
+               th:href="@{/lessons/{id}/quiz(id=${lessonId}, mode=1)}" 
+               class="btn-action btn-primary">
+                🔄 Làm Lại
+            </a>
+            <a th:if="${isCustomLesson != null and isCustomLesson}"
+               th:href="@{|/custom-lessons/${lessonId}/quiz?mode=1|}" 
+               class="btn-action btn-primary">
                 🔄 Làm Lại
             </a>
         </div>

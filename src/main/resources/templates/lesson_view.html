@@ -167,6 +167,13 @@
             color: #7f8c8d;
             margin-top: 3px;
         }
+
+        .word-pos {
+            font-size: 12px;
+            color: #667eea;
+            margin-top: 2px;
+            font-weight: 600;
+        }
         
         .word-item.active .word-hanzi {
             color: #667eea;
@@ -217,6 +224,17 @@
             margin-bottom: 40px;
             padding-bottom: 30px;
             border-bottom: 3px solid #f0f0f0;
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+        
+        .detail-main-left {
+            flex: 1;
+        }
+        
+        .detail-main-right {
+            flex: 0 0 auto;
         }
         
         .detail-hanzi {
@@ -227,6 +245,33 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .speaker-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .speaker-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+        }
+        
+        .speaker-btn:active {
+            transform: scale(0.95);
         }
         
         .detail-pinyin {
@@ -270,6 +315,34 @@
             color: #2c3e50;
             margin-bottom: 12px;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .speaker-btn-small {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            flex-shrink: 0;
+        }
+        
+        .speaker-btn-small:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+        
+        .speaker-btn-small:active {
+            transform: scale(0.95);
         }
         
         .example-vi {
@@ -360,28 +433,71 @@
             font-weight: 600;
             border-bottom: 2px solid #27ae60;
         }
+        
+        /* Stroke Order Styles */
+        .vocab-stroke-order {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .vocab-stroke-order h4 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: #667eea;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        .stroke-grid {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .stroke-char {
+            text-align: center;
+            padding: 8px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stroke-char-label {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
 </head>
 <body>
 
 <div class="container">
     <!-- Top Bar -->
     <div class="top-bar">
-        <h2 th:text="'📚 Bài ' + ${lessonNo} + ' - ' + ${lang} + ' ' + ${level}"></h2>
+        <h2 th:text="'📚 Bài ' + ${lesson.lessonIndex} + ' - ' + ${lesson.languageCode}"></h2>
         <div class="top-bar-buttons">
             <a class="btn"
-               th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=1|}">
+               th:href="@{/lessons/{id}/quiz(id=${lesson.id}, mode=1)}">
                 🎯 Tiếng Trung → Nghĩa
             </a>
             <a class="btn"
-               th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz?mode=2|}">
+               th:href="@{/lessons/{id}/quiz(id=${lesson.id}, mode=2)}">
                 🎯 Nghĩa → Tiếng Trung
             </a>
+            <a class="btn"
+               th:href="@{/lessons/{id}/quiz(id=${lesson.id}, mode=4)}">
+                ✍️ Điền Từ
+            </a>
             <a class="btn btn-practice"
-               th:href="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz/practice-wrong?mode=1|}">
+               th:href="@{/lessons/{id}/quiz/practice-wrong(id=${lesson.id}, mode=1)}">
                 🔄 Luyện Từ Sai
             </a>
-            <a class="btn btn-back" th:href="@{|/learning/${lang}|}">
+            <a class="btn btn-back" th:href="@{|/learning/${lesson.languageCode}|}">
                 ← Về Dashboard
             </a>
         </div>
@@ -415,6 +531,7 @@
                     </span>
                 </div>
                 <div class="word-pinyin" th:text="${w.pronunciation}"></div>
+                <div class="word-pos" th:text="${w.pos != null ? '[' + w.pos + ']' : ''}"></div>
             </div>
         </div>
 
@@ -427,16 +544,31 @@
             <div class="word-detail-content" id="detailContent" style="display: none;">
                 <!-- Main info -->
                 <div class="detail-main">
-                    <div class="detail-hanzi" id="detailHanzi">-</div>
-                    <div class="detail-pinyin" id="detailPinyin">-</div>
-                    <div class="detail-meaning" id="detailMeaning">-</div>
+                    <div class="detail-main-left">
+                        <div class="detail-hanzi">
+                            <span id="detailHanzi">-</span>
+                            <button class="speaker-btn" onclick="speakChinese(document.getElementById('detailHanzi').textContent)" title="Nghe phát âm">🔊</button>
+                        </div>
+                        <div class="detail-pinyin" id="detailPinyin">-</div>
+                        <div class="detail-meaning" id="detailMeaning">-</div>
+                    </div>
+                    <div class="detail-main-right">
+                        <div class="vocab-stroke-order">
+                            <h4>📝 Nét viết</h4>
+                            <div class="stroke-grid" id="strokeGrid">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Ví dụ -->
                 <div class="detail-section" id="exampleSection" style="display: none;">
                     <div class="detail-section-title">📖 Ví dụ</div>
                     <div class="detail-example">
-                        <div class="example-cn" id="exampleCn">-</div>
+                        <div class="example-cn">
+                            <button class="speaker-btn-small" onclick="speakChinese(document.getElementById('exampleCn').textContent)" title="Nghe câu ví dụ">🔊</button>
+                            <span id="exampleCn">-</span>
+                        </div>
                         <div class="example-vi" id="exampleVi">-</div>
                     </div>
                 </div>
@@ -512,7 +644,8 @@
         // Cập nhật thông tin chính
         document.getElementById('detailHanzi').textContent = word.word;
         document.getElementById('detailPinyin').textContent = word.pronunciation || '-';
-        document.getElementById('detailMeaning').textContent = word.meaning || '-';
+        const posPrefix = word.pos ? ('[' + word.pos + '] ') : '';
+        document.getElementById('detailMeaning').textContent = posPrefix + (word.meaning || '-');
         
         // Cập nhật ví dụ
         if (word.exampleSrc && word.exampleVi) {
@@ -531,6 +664,9 @@
             document.getElementById('imageSection').style.display = 'none';
         }
         
+        // Cập nhật nét viết
+        renderStrokeOrder(word.word);
+        
         // Cập nhật thống kê
         const totalAttempts = stats ? stats.totalAttempts : 0;
         const wrongCount = stats ? stats.wrongCount : 0;
@@ -539,6 +675,84 @@
         document.getElementById('statTotal').textContent = totalAttempts;
         document.getElementById('statWrong').textContent = wrongCount;
         document.getElementById('statRate').textContent = errorRate + '%';
+    }
+    
+    function renderStrokeOrder(word) {
+        const strokeGrid = document.getElementById('strokeGrid');
+        if (!word) {
+            strokeGrid.innerHTML = '';
+            return;
+        }
+        
+        // Split word into characters
+        const chars = word.split('');
+        
+        // Generate HTML for each character
+        const strokeHtml = chars.map((char, index) => `
+            <div class="stroke-char">
+                <div class="stroke-char-label">${char}</div>
+                <svg id="lesson-stroke-${index}" width="120" height="120"></svg>
+            </div>
+        `).join('');
+        
+        strokeGrid.innerHTML = strokeHtml;
+        
+        // Render HanziWriter animations after DOM is ready
+        setTimeout(() => {
+            chars.forEach((char, index) => {
+                try {
+                    const writer = HanziWriter.create(`lesson-stroke-${index}`, char, {
+                        width: 120,
+                        height: 120,
+                        padding: 5,
+                        strokeColor: '#667eea',
+                        outlineColor: '#ddd',
+                        showCharacter: false,
+                        showOutline: true,
+                        strokeAnimationSpeed: 1.5,
+                        delayBetweenStrokes: 200
+                    });
+                    writer.loopCharacterAnimation();
+                } catch (error) {
+                    console.log(`Character "${char}" not available in HanziWriter database`);
+                    document.getElementById(`lesson-stroke-${index}`).innerHTML = 
+                        '<text x="60" y="60" text-anchor="middle" font-size="48" fill="#ccc">' + char + '</text>';
+                }
+            });
+        }, 100);
+    }
+    
+    // Text-to-Speech function for Chinese
+    function speakChinese(text) {
+        if (!text || text === '-') return;
+        
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-CN'; // Chinese (Simplified)
+        utterance.rate = 0.8; // Slow down for learners
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        
+        // Try to find a Chinese voice
+        const voices = window.speechSynthesis.getVoices();
+        const chineseVoice = voices.find(voice => 
+            voice.lang.startsWith('zh') || voice.lang.startsWith('cmn')
+        );
+        
+        if (chineseVoice) {
+            utterance.voice = chineseVoice;
+        }
+        
+        window.speechSynthesis.speak(utterance);
+    }
+    
+    // Load voices (some browsers load them asynchronously)
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+        };
     }
 </script>
 

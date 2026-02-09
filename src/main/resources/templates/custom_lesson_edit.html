@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thêm Từ Vào Bài Học</title>
+    <title th:text="'Chỉnh sửa: ' + ${lesson.title}">Chỉnh sửa bài học</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -24,206 +20,146 @@
         }
         
         .header {
-            background: white;
-            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            padding: 30px;
             border-radius: 10px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         
-        .header-info h1 {
+        .header h1 {
             color: #667eea;
             margin-bottom: 10px;
-        }
-        
-        .header-info p {
-            color: #666;
         }
         
         .header-actions {
             display: flex;
             gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
         
         .btn-secondary {
-            padding: 10px 20px;
             background: #95a5a6;
             color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
         }
         
         .btn-secondary:hover {
             background: #7f8c8d;
         }
         
-        .content {
+        .content-area {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .vocab-list {
             display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 20px;
+            gap: 15px;
         }
         
-        /* Form thêm từ */
-        .add-word-form {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            height: fit-content;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-        }
-        
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .form-group textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        
-        .form-group .required {
-            color: #e74c3c;
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        /* Danh sách từ đã thêm */
-        .word-list {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .word-list h2 {
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
-        }
-        
-        .word-item {
-            padding: 15px;
-            margin-bottom: 15px;
+        .vocab-item {
             background: #f8f9fa;
+            padding: 15px;
             border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .word-item .word-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            transition: all 0.2s;
         }
         
-        .word-item .word-main {
-            font-size: 24px;
+        .vocab-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .vocab-info {
+            flex: 1;
+        }
+        
+        .vocab-word {
+            font-size: 20px;
             font-weight: bold;
-            color: #333;
+            color: #667eea;
+            margin-bottom: 5px;
         }
         
-        .word-item .word-pronunciation {
+        .vocab-meaning {
             color: #666;
-            font-style: italic;
+            margin-bottom: 3px;
         }
         
-        .word-item .word-meaning {
-            color: #444;
-            margin-top: 5px;
+        .vocab-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 5px;
         }
         
-        .word-item .word-example {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #ddd;
-            font-size: 14px;
-            color: #666;
+        .badge-system {
+            background: #3498db;
+            color: white;
         }
         
-        .word-item .remove-btn {
+        .badge-user {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .vocab-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-edit-vocab {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-edit-vocab:hover {
+            background: #e67e22;
+        }
+        
+        .btn-delete {
             background: #e74c3c;
             color: white;
             border: none;
             padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
-            margin-left: 5px;
+            font-weight: 600;
         }
         
-        .word-item .remove-btn:hover {
-            background: #c0392b;
-        }
-        
-        .word-item .edit-btn {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .word-item .edit-btn:hover {
-            background: #2980b9;
-        }
-        
-        .word-item-actions {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .word-item .remove-btn:hover {
+        .btn-delete:hover {
             background: #c0392b;
         }
         
@@ -233,14 +169,7 @@
             color: #999;
         }
         
-        .empty-state svg {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-        
-        /* Modal xác nhận từ đã tồn tại */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -249,9 +178,9 @@
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.5);
-            z-index: 1000;
             align-items: center;
             justify-content: center;
+            z-index: 1000;
         }
         
         .modal.active {
@@ -262,482 +191,459 @@
             background: white;
             padding: 30px;
             border-radius: 10px;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         .modal-header {
             margin-bottom: 20px;
         }
         
-        .modal-header h3 {
+        .modal-header h2 {
+            color: #667eea;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
             color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .modal-body {
-            margin-bottom: 20px;
-        }
-        
-        .existing-vocab-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-        
-        .existing-vocab-info p {
-            margin-bottom: 8px;
-            color: #555;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .modal-buttons button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
             font-weight: 600;
         }
         
-        .btn-accept {
-            background: #27ae60;
-            color: white;
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
         }
         
-        .btn-accept:hover {
-            background: #229954;
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
         }
         
-        .btn-cancel {
-            background: #e74c3c;
-            color: white;
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
         
-        .btn-cancel:hover {
-            background: #c0392b;
-        }
-        
-        .success-message,
-        .error-message {
-            padding: 15px;
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            min-width: 300px;
         }
         
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .toast.show {
+            display: flex;
+            animation: slideIn 0.3s ease;
         }
         
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
         
-        .success-message.show,
-        .error-message.show {
-            display: block;
+        .toast.success {
+            border-left: 4px solid #27ae60;
+        }
+        
+        .toast.error {
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .toast-icon {
+            font-size: 24px;
+        }
+        
+        .toast-message {
+            flex: 1;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="header-info">
-                <h1 th:text="${lesson.title}">Bài Học Của Tôi</h1>
-                <p th:text="${lesson.description}">Mô tả bài học</p>
-            </div>
+            <h1 th:text="'Chỉnh sửa: ' + ${lesson.title}">Chỉnh sửa bài học</h1>
+            <p th:text="${lesson.description}"></p>
             <div class="header-actions">
-                <a href="/custom-lessons" class="btn-secondary">← Danh Sách Bài</a>
+                <button class="btn btn-primary" onclick="showAddModal()">➕ Thêm từ mới</button>
+                <a th:href="@{/custom-lessons/{id}/view(id=${lesson.id})}" class="btn btn-secondary">👁️ Xem bài học</a>
+                <a th:href="@{/custom-lessons}" class="btn btn-secondary">⬅️ Quay lại</a>
             </div>
         </div>
         
-        <div class="success-message" id="successMessage"></div>
-        <div class="error-message" id="errorMessage"></div>
-        
-        <div class="content">
-            <!-- Form thêm từ mới -->
-            <div class="add-word-form">
-                <h2 style="margin-bottom: 20px; color: #667eea;">➕ Thêm Từ Mới</h2>
-                
-                <form id="addWordForm">
-                    <div class="form-group">
-                        <label>Từ Hán <span class="required">*</span></label>
-                        <input type="text" id="word" required placeholder="Ví dụ: 茶">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Phiên Âm (Pinyin)</label>
-                        <input type="text" id="pronunciation" placeholder="Ví dụ: chá">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Từ Loại</label>
-                        <select id="pos">
-                            <option value="">-- Chọn từ loại --</option>
-                            <option value="n">Danh từ (n)</option>
-                            <option value="v">Động từ (v)</option>
-                            <option value="adj">Tính từ (adj)</option>
-                            <option value="adv">Trạng từ (adv)</option>
-                            <option value="prep">Giới từ (prep)</option>
-                            <option value="conj">Liên từ (conj)</option>
-                            <option value="pron">Đại từ (pron)</option>
-                            <option value="num">Số từ (num)</option>
-                            <option value="m">Lượng từ (m)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Nghĩa Tiếng Việt <span class="required">*</span></label>
-                        <input type="text" id="meaning" required placeholder="Ví dụ: trà">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Ví Dụ (Tiếng Trung)</label>
-                        <textarea id="exampleSrc" placeholder="Ví dụ: 我喜欢喝茶"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Ví Dụ (Tiếng Việt)</label>
-                        <textarea id="exampleVi" placeholder="Ví dụ: Tôi thích uống trà"></textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn" id="submitBtn">➕ Thêm Từ Vào Bài Học</button>
-                    <button type="button" class="btn" id="cancelBtn" onclick="cancelEdit()" style="display:none; background:#95a5a6; margin-top:10px;">✕ Hủy Chỉnh Sửa</button>
-                </form>
-            </div>
+        <div class="content-area">
+            <h2 style="margin-bottom: 20px; color: #333;">
+                Danh sách từ vựng (<span th:text="${vocabularies.size()}">0</span> từ)
+            </h2>
             
-            <!-- Danh sách từ đã thêm -->
-            <div class="word-list">
-                <h2>📝 Danh Sách Từ Đã Thêm (<span id="wordCount">0</span>)</h2>
-                
-                <div id="wordListContainer">
-                    <div class="empty-state">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                        <p>Chưa có từ nào. Hãy thêm từ đầu tiên!</p>
+            <div class="vocab-list" th:if="${vocabularies.size() > 0}">
+                <div class="vocab-item" th:each="vocab : ${vocabularies}">
+                    <div class="vocab-info">
+                        <div class="vocab-word">
+                            <span th:text="${vocab.word}">词</span>
+                            <span class="vocab-badge" 
+                                  th:classappend="${vocab.isUserVocab} ? 'badge-user' : 'badge-system'"
+                                  th:text="${vocab.isUserVocab} ? 'Từ của tôi' : 'Từ hệ thống'">
+                            </span>
+                        </div>
+                        <div class="vocab-meaning" th:text="${vocab.pronunciation}">pinyin</div>
+                        <div class="vocab-meaning" th:text="${vocab.meaning}">meaning</div>
+                    </div>
+                    <div class="vocab-actions">
+                        <button class="btn-edit-vocab" 
+                                onclick="showEditModal(this)"
+                                th:data-id="${vocab.id}"
+                                th:data-word="${vocab.word}"
+                                th:data-pronunciation="${vocab.pronunciation}"
+                                th:data-pos="${vocab.pos}"
+                                th:data-meaning="${vocab.meaning}"
+                                th:data-example-src="${vocab.exampleSrc}"
+                                th:data-example-vi="${vocab.exampleVi}"
+                                th:data-level="${vocab.level}"
+                                th:data-is-user-vocab="${vocab.isUserVocab}">
+                            ✏️ Sửa
+                        </button>
+                        <button class="btn-delete" 
+                                onclick="deleteVocab(this)"
+                                th:data-id="${vocab.id}"
+                                th:data-is-user-vocab="${vocab.isUserVocab}"
+                                th:data-word="${vocab.word}">
+                            🗑️ Xóa
+                        </button>
                     </div>
                 </div>
+            </div>
+            
+            <div class="empty-state" th:if="${vocabularies.size() == 0}">
+                <h2>📝 Chưa có từ nào</h2>
+                <p>Hãy thêm từ vào bài học của bạn!</p>
             </div>
         </div>
     </div>
     
-    <!-- Modal xác nhận từ đã tồn tại -->
-    <div class="modal" id="confirmModal">
+    <!-- Modal thêm từ mới -->
+    <div class="modal" id="addModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>⚠️ Từ Đã Tồn Tại Trong Database</h3>
+                <h2>➕ Thêm từ mới</h2>
             </div>
-            <div class="modal-body">
-                <p id="modalMessage"></p>
-                <div class="existing-vocab-info" id="existingVocabInfo"></div>
-            </div>
-            <div class="modal-buttons">
-                <button class="btn-accept" id="btnAccept">✓ Sử Dụng Từ Này</button>
-                <button class="btn-cancel" id="btnCancel">✕ Hủy</button>
-            </div>
+            <form id="addForm" onsubmit="addVocab(event)">
+                <div class="form-group">
+                    <label>Từ vựng <span style="color: red;">*</span></label>
+                    <input type="text" id="addWord" required>
+                </div>
+                <div class="form-group">
+                    <label>Phiên âm</label>
+                    <input type="text" id="addPronunciation">
+                </div>
+                <div class="form-group">
+                    <label>Từ loại</label>
+                    <input type="text" id="addPos" placeholder="n., v., adj., ...">
+                </div>
+                <div class="form-group">
+                    <label>Nghĩa</label>
+                    <textarea id="addMeaning" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Ví dụ (tiếng Trung)</label>
+                    <textarea id="addExampleSrc" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Ví dụ (tiếng Việt)</label>
+                    <textarea id="addExampleVi" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Cấp độ</label>
+                    <input type="text" id="addLevel" value="A1">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Thêm</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Hủy</button>
+                </div>
+            </form>
         </div>
     </div>
     
-    <script>
-        // Lấy từ Thymeleaf
-        const CUSTOM_LESSON_ID = [[${lesson.id}]];
-        const USER_ID = 1;
-        const LANGUAGE_CODE = '[[${lesson.languageCode}]]';
-        const LEVEL = '[[${lesson.level}]]';
+    <!-- Modal sửa từ -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Chỉnh sửa từ vựng</h2>
+            </div>
+            <form id="editForm" onsubmit="updateVocab(event)">
+                <input type="hidden" id="editVocabId">
+                <div class="form-group">
+                    <label>Từ vựng <span style="color: red;">*</span></label>
+                    <input type="text" id="editWord" required>
+                </div>
+                <div class="form-group">
+                    <label>Phiên âm</label>
+                    <input type="text" id="editPronunciation">
+                </div>
+                <div class="form-group">
+                    <label>Từ loại</label>
+                    <input type="text" id="editPos">
+                </div>
+                <div class="form-group">
+                    <label>Nghĩa</label>
+                    <textarea id="editMeaning" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Ví dụ (tiếng Trung)</label>
+                    <textarea id="editExampleSrc" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Ví dụ (tiếng Việt)</label>
+                    <textarea id="editExampleVi" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Cấp độ</label>
+                    <input type="text" id="editLevel">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Cập nhật</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Toast notification -->
+    <div class="toast" id="toast">
+        <div class="toast-icon" id="toastIcon">✅</div>
+        <div class="toast-message" id="toastMessage"></div>
+    </div>
+    
+    <script th:inline="javascript">
+        const lessonId = /*[[${lesson.id}]]*/ 0;
+        const languageCode = /*[[${lesson.languageCode}]]*/ 'cn';
         
-        let currentExistingVocab = null;
-        let currentFormData = null;
-        let vocabularies = [];
-        
-        // Load danh sách từ từ backend
-        async function loadVocabularies() {
-            try {
-                const response = await fetch(`/api/custom-vocabulary/lesson/${CUSTOM_LESSON_ID}`);
-                const result = await response.json();
-                if (result.success && result.lesson && result.lesson.vocabularies) {
-                    vocabularies = result.lesson.vocabularies;
-                    renderWordList();
-                }
-            } catch (error) {
-                console.error('Error loading vocabularies:', error);
-            }
+        function showAddModal() {
+            document.getElementById('addModal').classList.add('active');
+            document.getElementById('addForm').reset();
         }
         
-        // Show message
-        function showMessage(message, isSuccess = true) {
-            const successMsg = document.getElementById('successMessage');
-            const errorMsg = document.getElementById('errorMessage');
+        function showEditModal(button) {
+            const id = button.getAttribute('data-id');
+            const word = button.getAttribute('data-word') || '';
+            const pronunciation = button.getAttribute('data-pronunciation') || '';
+            const pos = button.getAttribute('data-pos') || '';
+            const meaning = button.getAttribute('data-meaning') || '';
+            const exampleSrc = button.getAttribute('data-example-src') || '';
+            const exampleVi = button.getAttribute('data-example-vi') || '';
+            const level = button.getAttribute('data-level') || '';
+            const isUserVocab = button.getAttribute('data-is-user-vocab') === 'true';
             
-            if (isSuccess) {
-                successMsg.textContent = message;
-                successMsg.classList.add('show');
-                setTimeout(() => successMsg.classList.remove('show'), 3000);
+            document.getElementById('editVocabId').value = id;
+            document.getElementById('editWord').value = word;
+            document.getElementById('editPronunciation').value = pronunciation;
+            document.getElementById('editPos').value = pos;
+            document.getElementById('editMeaning').value = meaning;
+            document.getElementById('editExampleSrc').value = exampleSrc;
+            document.getElementById('editExampleVi').value = exampleVi;
+            document.getElementById('editLevel').value = level;
+            
+            // Store isUserVocab in hidden field
+            const form = document.getElementById('editForm');
+            let isUserVocabField = document.getElementById('editIsUserVocab');
+            if (!isUserVocabField) {
+                isUserVocabField = document.createElement('input');
+                isUserVocabField.type = 'hidden';
+                isUserVocabField.id = 'editIsUserVocab';
+                form.appendChild(isUserVocabField);
+            }
+            isUserVocabField.value = isUserVocab;
+            
+            // Disable/enable fields based on vocab type
+            const isSystemVocab = !isUserVocab;
+            document.getElementById('editWord').disabled = isSystemVocab;
+            document.getElementById('editPronunciation').disabled = isSystemVocab;
+            document.getElementById('editPos').disabled = isSystemVocab;
+            document.getElementById('editMeaning').disabled = isSystemVocab;
+            document.getElementById('editLevel').disabled = isSystemVocab;
+            
+            // Update modal title
+            const modalTitle = document.querySelector('#editModal .modal-header h2');
+            if (isSystemVocab) {
+                modalTitle.innerHTML = '👁️ Xem từ vựng hệ thống <small style="color: #e74c3c; font-size: 14px;">(Chỉ có thể sửa ví dụ)</small>';
             } else {
-                errorMsg.textContent = message;
-                errorMsg.classList.add('show');
-                setTimeout(() => errorMsg.classList.remove('show'), 5000);
+                modalTitle.innerHTML = '✏️ Chỉnh sửa từ vựng';
             }
+            
+            // Update button text
+            const submitBtn = document.querySelector('#editForm button[type="submit"]');
+            submitBtn.textContent = isSystemVocab ? 'Cập nhật ví dụ' : 'Cập nhật';
+            
+            document.getElementById('editModal').classList.add('active');
         }
         
-        // Submit form
-        document.getElementById('addWordForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const word = document.getElementById('word').value.trim();
-            const meaning = document.getElementById('meaning').value.trim();
-            
-            if (!word || !meaning) {
-                showMessage('Vui lòng nhập Từ Hán và Nghĩa!', false);
-                return;
-            }
-            
-            // Nếu đang ở chế độ edit
-            if (editingIndex !== null) {
-                // Cập nhật từ trong array
-                vocabularies[editingIndex] = {
-                    ...vocabularies[editingIndex],
-                    word: word,
-                    pronunciation: document.getElementById('pronunciation').value.trim(),
-                    pos: document.getElementById('pos').value,
-                    meaning: meaning,
-                    exampleSrc: document.getElementById('exampleSrc').value.trim(),
-                    exampleVi: document.getElementById('exampleVi').value.trim()
-                };
-                
-                renderWordList();
-                resetForm();
-                cancelEdit();
-                showMessage('✓ Đã cập nhật từ thành công!', true);
-                return;
-            }
-            
-            // Nếu đang thêm từ mới
-            currentFormData = {
-                word: word,
-                pronunciation: document.getElementById('pronunciation').value.trim(),
-                pos: document.getElementById('pos').value,
-                meaning: meaning,
-                exampleSrc: document.getElementById('exampleSrc').value.trim(),
-                exampleVi: document.getElementById('exampleVi').value.trim(),
-                languageCode: LANGUAGE_CODE,
-                level: LEVEL,
-                customLessonId: CUSTOM_LESSON_ID
-            };
-            
-            // Bước 1: Kiểm tra từ đã tồn tại chưa
-            try {
-                const checkResponse = await fetch('/api/custom-vocabulary/check', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        word: word,
-                        languageCode: LANGUAGE_CODE
-                    })
-                });
-                
-                const checkResult = await checkResponse.json();
-                
-                if (checkResult.exists) {
-                    // Từ đã tồn tại → hiển thị modal xác nhận
-                    showConfirmModal(checkResult);
-                } else {
-                    // Từ chưa tồn tại → thêm luôn
-                    await addVocabulary();
-                }
-            } catch (error) {
-                showMessage('Lỗi: ' + error.message, false);
-            }
-        });
-        
-        // Hiển thị modal xác nhận
-        function showConfirmModal(checkResult) {
-            currentExistingVocab = checkResult.existingVocab;
-            
-            // Kiểm tra các trường thiếu
-            const missingFields = [];
-            if (!currentExistingVocab.pronunciation) missingFields.push('phiên âm');
-            if (!currentExistingVocab.pos) missingFields.push('từ loại');
-            if (!currentExistingVocab.exampleSrc) missingFields.push('ví dụ tiếng Trung');
-            if (!currentExistingVocab.exampleVi) missingFields.push('ví dụ tiếng Việt');
-            
-            let message = checkResult.message;
-            if (missingFields.length > 0) {
-                message += `<br><br>⚠️ <strong>Thông tin thiếu:</strong> ${missingFields.join(', ')}. Các thông tin bạn nhập sẽ được cập nhật vào từ này.`;
-            }
-            
-            document.getElementById('modalMessage').innerHTML = message;
-            
-            const vocabInfo = `
-                <p><strong>Từ:</strong> ${currentExistingVocab.word}</p>
-                <p><strong>Phiên âm:</strong> ${currentExistingVocab.pronunciation || '<span style="color:#e74c3c;">Chưa có</span>'}</p>
-                <p><strong>Từ loại:</strong> ${currentExistingVocab.pos || '<span style="color:#e74c3c;">Chưa có</span>'}</p>
-                <p><strong>Nghĩa:</strong> ${currentExistingVocab.meaning}</p>
-                <p><strong>Ví dụ (CN):</strong> ${currentExistingVocab.exampleSrc || '<span style="color:#e74c3c;">Chưa có</span>'}</p>
-                <p><strong>Ví dụ (VI):</strong> ${currentExistingVocab.exampleVi || '<span style="color:#e74c3c;">Chưa có</span>'}</p>
-            `;
-            
-            document.getElementById('existingVocabInfo').innerHTML = vocabInfo;
-            document.getElementById('confirmModal').classList.add('active');
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
         }
         
-        // Accept sử dụng từ đã tồn tại
-        document.getElementById('btnAccept').addEventListener('click', async () => {
-            document.getElementById('confirmModal').classList.remove('active');
-            await addVocabulary();
-        });
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+            
+            toast.className = 'toast show ' + type;
+            icon.textContent = type === 'success' ? '✅' : '❌';
+            msg.textContent = message;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
         
-        // Cancel
-        document.getElementById('btnCancel').addEventListener('click', () => {
-            document.getElementById('confirmModal').classList.remove('active');
-            currentExistingVocab = null;
-            currentFormData = null;
-        });
-        
-        // Thêm vocabulary vào custom lesson
-        async function addVocabulary() {
+        async function addVocab(event) {
+            event.preventDefault();
+            
+            const formData = new URLSearchParams();
+            formData.append('word', document.getElementById('addWord').value);
+            formData.append('pronunciation', document.getElementById('addPronunciation').value);
+            formData.append('pos', document.getElementById('addPos').value);
+            formData.append('meaning', document.getElementById('addMeaning').value);
+            formData.append('exampleSrc', document.getElementById('addExampleSrc').value);
+            formData.append('exampleVi', document.getElementById('addExampleVi').value);
+            formData.append('languageCode', languageCode);
+            formData.append('level', document.getElementById('addLevel').value);
+            
             try {
-                console.log('Sending data:', currentFormData);
-                
-                const response = await fetch('/api/custom-vocabulary/add', {
+                const response = await fetch(`/custom-lessons/${lessonId}/vocabulary/add`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(currentFormData)
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
                 });
                 
-                console.log('Response status:', response.status);
                 const result = await response.json();
-                console.log('Response data:', result);
                 
                 if (result.success) {
-                    showMessage('✓ Đã thêm từ thành công!', true);
-                    await loadVocabularies(); // Reload danh sách từ server
-                    resetForm();
+                    showToast(result.message, 'success');
+                    closeModal('addModal');
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    showMessage('Lỗi: ' + result.message, false);
+                    showToast(result.message, 'error');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                showMessage('Lỗi: ' + error.message, false);
+                showToast('Lỗi kết nối: ' + error.message, 'error');
             }
         }
         
-        // Reset form
-        function resetForm() {
-            document.getElementById('addWordForm').reset();
-            currentFormData = null;
-            currentExistingVocab = null;
-        }
-        
-        // Render danh sách từ
-        function renderWordList() {
-            const container = document.getElementById('wordListContainer');
-            document.getElementById('wordCount').textContent = vocabularies.length;
+        async function updateVocab(event) {
+            event.preventDefault();
             
-            if (vocabularies.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                        <p>Chưa có từ nào. Hãy thêm từ đầu tiên!</p>
-                    </div>
-                `;
+            const vocabId = document.getElementById('editVocabId').value;
+            const isUserVocab = document.getElementById('editIsUserVocab').value === 'true';
+            
+            if (!isUserVocab) {
+                showToast('Không thể sửa từ hệ thống. Chỉ có thể cập nhật ví dụ.', 'error');
                 return;
             }
             
-            const html = vocabularies.map((vocab, index) => `
-                <div class="word-item">
-                    <div class="word-header">
-                        <div>
-                            <div class="word-main">${vocab.word}</div>
-                            <div class="word-pronunciation">${vocab.pronunciation || ''}</div>
-                        </div>
-                        <div class="word-item-actions">
-                            <button class="edit-btn" onclick="editWord(${index})">✏️ Sửa</button>
-                            <button class="remove-btn" onclick="removeWord(${index})">🗑️ Xóa</button>
-                        </div>
-                    </div>
-                    <div class="word-meaning">
-                        <strong>${vocab.pos ? '[' + vocab.pos + ']' : ''}</strong> ${vocab.meaning}
-                    </div>
-                    ${vocab.exampleSrc ? `
-                        <div class="word-example">
-                            <div>${vocab.exampleSrc}</div>
-                            <div style="color: #27ae60;">${vocab.exampleVi || ''}</div>
-                        </div>
-                    ` : ''}
-                </div>
-            `).join('');
+            const formData = new URLSearchParams();
+            formData.append('word', document.getElementById('editWord').value);
+            formData.append('pronunciation', document.getElementById('editPronunciation').value);
+            formData.append('pos', document.getElementById('editPos').value);
+            formData.append('meaning', document.getElementById('editMeaning').value);
+            formData.append('exampleSrc', document.getElementById('editExampleSrc').value);
+            formData.append('exampleVi', document.getElementById('editExampleVi').value);
+            formData.append('level', document.getElementById('editLevel').value);
             
-            container.innerHTML = html;
-        }
-        
-        // Xóa từ
-        function removeWord(index) {
-            if (confirm('Bạn có chắc muốn xóa từ này khỏi bài học?')) {
-                vocabularies.splice(index, 1);
-                renderWordList();
-                showMessage('Đã xóa từ!', true);
+            try {
+                const response = await fetch(`/custom-lessons/${lessonId}/vocabulary/${vocabId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    closeModal('editModal');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(result.message, 'error');
+                }
+            } catch (error) {
+                showToast('Lỗi kết nối: ' + error.message, 'error');
             }
         }
         
-        // Sửa từ - Load thông tin vào form
-        let editingIndex = null;
-        
-        function editWord(index) {
-            editingIndex = index;
-            const vocab = vocabularies[index];
+        async function deleteVocab(button) {
+            const vocabId = button.getAttribute('data-id');
+            const isUserVocab = button.getAttribute('data-is-user-vocab') === 'true';
+            const word = button.getAttribute('data-word');
             
-            // Load dữ liệu vào form
-            document.getElementById('word').value = vocab.word || '';
-            document.getElementById('pronunciation').value = vocab.pronunciation || '';
-            document.getElementById('pos').value = vocab.pos || '';
-            document.getElementById('meaning').value = vocab.meaning || '';
-            document.getElementById('exampleSrc').value = vocab.exampleSrc || '';
-            document.getElementById('exampleVi').value = vocab.exampleVi || '';
+            if (!confirm(`Bạn có chắc muốn xóa từ "${word}" khỏi bài học?`)) {
+                return;
+            }
             
-            // Scroll to form
-            document.querySelector('.add-word-form').scrollIntoView({ behavior: 'smooth' });
-            
-            // Đổi text button
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.textContent = '💾 Cập Nhật Từ';
-            submitBtn.style.background = '#f39c12';
-            
-            // Show cancel button
-            document.getElementById('cancelBtn').style.display = 'block';
-            
-            showMessage('Đang chỉnh sửa từ "' + vocab.word + '"', true);
+            try {
+                const response = await fetch(`/custom-lessons/${lessonId}/vocabulary/${vocabId}?isUserVocab=${isUserVocab}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(result.message, 'error');
+                }
+            } catch (error) {
+                showToast('Lỗi kết nối: ' + error.message, 'error');
+            }
         }
         
-        // Reset editing mode
-        function cancelEdit() {
-            editingIndex = null;
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.textContent = '➕ Thêm Từ Vào Bài Học';
-            submitBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        // Hiển thị flash message nếu có
+        window.addEventListener('DOMContentLoaded', () => {
+            // Kiểm tra flash message từ server
+            const flashSuccess = /*[[${success}]]*/ null;
+            if (flashSuccess) {
+                showToast(flashSuccess, 'success');
+            }
             
-            // Hide cancel button
-            document.getElementById('cancelBtn').style.display = 'none';
-            
-            resetForm();
-        }
-        
-        // Init - Load danh sách từ khi trang load
-        loadVocabularies();
+            // Kiểm tra URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+            if (success) {
+                showToast(success, 'success');
+            }
+        });
     </script>
 </body>
 </html>

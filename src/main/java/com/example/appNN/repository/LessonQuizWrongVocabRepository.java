@@ -27,4 +27,12 @@ public interface LessonQuizWrongVocabRepository
             @Param("level") String level,
             @Param("lessonNo") Integer lessonNo
     );
+    
+    // Lấy danh sách vocab sai (distinct) cho 1 lesson theo lessonId
+    @Query("""
+        SELECT DISTINCT w.vocabulary.id
+        FROM LessonQuizWrongVocabEntity w
+        WHERE w.attempt.lesson.id = :lessonId
+    """)
+    List<Long> findDistinctWrongVocabIdsForLessonId(@Param("lessonId") Long lessonId);
 }

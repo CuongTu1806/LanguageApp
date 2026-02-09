@@ -2,10 +2,8 @@ package com.example.appNN.controller;
 
 import com.example.appNN.entity.VocabularyEntity;
 import com.example.appNN.entity.LessonEntity;
-import com.example.appNN.entity.CustomLessonEntity;
 import com.example.appNN.repository.VocabularyRepository;
 import com.example.appNN.repository.LessonRepository;
-import com.example.appNN.repository.CustomLessonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +21,6 @@ public class SearchController {
     @Autowired
     private LessonRepository lessonRepository;
     
-    @Autowired
-    private CustomLessonRepository customLessonRepository;
-    
     /**
      * Tìm kiếm từ vựng theo từ và ngôn ngữ
      */
@@ -34,11 +29,14 @@ public class SearchController {
             @RequestParam String word,
             @RequestParam String languageCode) {
         
-        Optional<VocabularyEntity> vocab = vocabularyRepository
+        List<VocabularyEntity> vocabList = vocabularyRepository
                 .findByWordAndLanguageCode(word, languageCode);
         
-        return vocab.map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build());
+        if (!vocabList.isEmpty()) {
+            return ResponseEntity.ok(vocabList.get(0)); // Trả về từ đầu tiên nếu có duplicate
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
     
     /**
@@ -76,34 +74,36 @@ public class SearchController {
     }
     
     /**
-     * Tìm kiếm bài học tự tạo (custom lessons)
+     * Tìm kiếm bài học (cả system và personal lessons)
+     * Filter theo lesson_type='personal' để lấy bài tự tạo
      */
     @GetMapping("/lessons/search/custom")
-    public ResponseEntity<List<CustomLessonEntity>> searchCustomLessons(
+    public ResponseEntity<List<LessonEntity>> searchCustomLessons(
             @RequestParam String languageCode,
             @RequestParam Long userId,
             @RequestParam(required = false) String level,
             @RequestParam(required = false) Integer minCount,
             @RequestParam(required = false) Integer maxCount) {
         
-        List<CustomLessonEntity> lessons;
+        List<LessonEntity> lessons;
         
         // Lọc theo số lượng từ
         if (minCount != null && maxCount != null) {
-            lessons = customLessonRepository.findByUserIdAndVocabularyCountBetween(userId, minCount, maxCount);
+            lessons = lessonRepository.findByUserIdAndVocabularyCountBetween(userId, minCount, maxCount);
         } else if (minCount != null) {
-            lessons = customLessonRepository.findByUserIdAndVocabularyCountGreaterThanEqual(userId, minCount);
+            lessons = lessonRepository.findByUserIdAndVocabularyCountGreaterThanEqual(userId, minCount);
         } else if (maxCount != null) {
-            lessons = customLessonRepository.findByUserIdAndVocabularyCountLessThanEqual(userId, maxCount);
+            lessons = lessonRepository.findByUserIdAndVocabularyCountLessThanEqual(userId, maxCount);
         } else {
             // Không lọc theo số lượng
-            lessons = customLessonRepository.findByUserId(userId);
+            lessons = lessonRepository.findByUserId(userId);
         }
         
-        // Lọc thêm theo ngôn ngữ và level
-        List<CustomLessonEntity> filtered = lessons.stream()
+        // Lọc thêm theo ngôn ngữ, level và lessonType='personal'
+        List<LessonEntity> filtered = lessons.stream()
             .filter(lesson -> lesson.getLanguageCode().equals(languageCode))
             .filter(lesson -> level == null || lesson.getLevel().equals(level))
+            .filter(lesson -> "personal".equals(lesson.getLessonType()))
             .toList();
         
         return ResponseEntity.ok(filtered);

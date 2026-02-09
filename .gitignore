@@ -31,3 +31,17 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Custom ###
+# Ignore sensitive configuration
+src/main/resources/application.properties
+
+# Ignore downloaded images
+src/main/resources/static/images/vocab/*.jpg
+src/main/resources/static/images/vocab/*.png
+src/main/resources/static/images/vocab/*.gif
+!src/main/resources/static/images/vocab/.gitkeep
+
+# Ignore log files
+*.log
+logs/

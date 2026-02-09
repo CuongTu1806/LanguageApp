@@ -1,5 +1,6 @@
 package com.example.appNN.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +13,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class VocabularyEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,8 +51,5 @@ public class VocabularyEntity {
 
     @Column(name = "language_code")
     private String languageCode;
-
-    @Column(name ="lesson_no")
-    private Integer lessonNo;
 
 }

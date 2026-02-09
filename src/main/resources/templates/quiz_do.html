@@ -315,7 +315,10 @@
         
         <!-- Question Area -->
         <div class="question-area">
-            <form id="quizForm" th:action="@{|/courses/${lang}/${level}/lessons/${lessonNo}/quiz/submit|}" method="post">
+            <form id="quizForm" th:action="@{/lessons/{id}/quiz/submit(id=${lessonId})}" method="post">
+                <!-- Hidden input để truyền isPractice -->
+                <input type="hidden" name="isPractice" th:value="${isPractice != null ? isPractice : false}" />
+                
                 <div th:each="q, stat : ${questions}" class="question-card" th:data-index="${stat.index}">
                     <!-- Feedback Notification -->
                     <div class="feedback-notification"></div>

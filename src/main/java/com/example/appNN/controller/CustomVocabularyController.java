@@ -2,15 +2,17 @@ package com.example.appNN.controller;
 
 import com.example.appNN.dto.AddVocabularyRequest;
 import com.example.appNN.dto.VocabularyCheckResponse;
-import com.example.appNN.entity.CustomLessonEntity;
+import com.example.appNN.dto.VocabularyDto;
+import com.example.appNN.entity.LessonEntity;
 import com.example.appNN.entity.VocabularyEntity;
-import com.example.appNN.service.CustomLessonService;
+import com.example.appNN.service.LessonService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CustomVocabularyController {
     
-    private final CustomLessonService customLessonService;
+    private final LessonService lessonService;
     
     /**
      * Kiểm tra từ đã tồn tại trong DB chưa
@@ -43,7 +45,7 @@ public class CustomVocabularyController {
             );
         }
         
-        VocabularyCheckResponse response = customLessonService.checkVocabularyExists(word, languageCode);
+        VocabularyCheckResponse response = lessonService.checkVocabularyExists(word, languageCode);
         return ResponseEntity.ok(response);
     }
     
@@ -80,8 +82,8 @@ public class CustomVocabularyController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            // Thêm vocabulary vào custom lesson
-            VocabularyEntity vocab = customLessonService.addVocabularyToCustomLesson(request);
+            // Thêm vocabulary vào personal lesson (có thể là VocabularyEntity hoặc UserVocabularyEntity)
+            Object vocab = lessonService.addVocabularyToPersonalLesson(request);
             
             response.put("success", true);
             response.put("message", "Vocabulary added successfully");
@@ -93,6 +95,11 @@ public class CustomVocabularyController {
             log.error("Error adding vocabulary to custom lesson", e);
             response.put("success", false);
             response.put("message", "Error: " + e.getMessage());
+            response.put("errorDetails", e.getClass().getSimpleName()); // Thêm loại exception để debug
+            
+            // Log full stack trace để dễ debug
+            e.printStackTrace();
+            
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -122,7 +129,7 @@ public class CustomVocabularyController {
             String languageCode = (String) request.get("languageCode");
             String level = (String) request.get("level");
             
-            CustomLessonEntity lesson = customLessonService.createCustomLesson(
+            LessonEntity lesson = lessonService.createPersonalLesson(
                 userId, title, description, languageCode, level
             );
             
@@ -151,7 +158,7 @@ public class CustomVocabularyController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            var lessons = customLessonService.getMyCustomLessons(userId);
+            var lessons = lessonService.getPersonalLessons(userId);
             
             response.put("success", true);
             response.put("lessons", lessons);
@@ -177,7 +184,8 @@ public class CustomVocabularyController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            CustomLessonEntity lesson = customLessonService.getCustomLessonById(lessonId);
+            LessonEntity lesson = lessonService.findById(lessonId)
+                    .orElseThrow(() -> new RuntimeException("Lesson not found: " + lessonId));
             
             if (lesson == null) {
                 response.put("success", false);
@@ -185,14 +193,83 @@ public class CustomVocabularyController {
                 return ResponseEntity.notFound().build();
             }
             
+            // Lấy tất cả vocabulary (cả system và user) từ junction table dưới dạng DTO
+            List<VocabularyDto> vocabularies = lessonService.getAllVocabulariesForLessonAsDto(lessonId);
+            
             response.put("success", true);
             response.put("lesson", lesson);
-            response.put("vocabularies", lesson.getVocabularies());
+            response.put("vocabularies", vocabularies);
             
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
             log.error("Error getting custom lesson detail", e);
+            response.put("success", false);
+            response.put("message", "Error: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * Cập nhật thông tin custom lesson (title, description)
+     * PUT /api/custom-vocabulary/lesson/{lessonId}/info
+     */
+    @PutMapping("/lesson/{lessonId}/info")
+    public ResponseEntity<Map<String, Object>> updateCustomLessonInfo(
+            @PathVariable Long lessonId,
+            @RequestBody Map<String, String> request) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            String title = request.get("title");
+            String description = request.get("description");
+            
+            if (title == null || title.trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Title is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            LessonEntity lesson = lessonService.updateLessonInfo(
+                lessonId, title, description
+            );
+            
+            response.put("success", true);
+            response.put("message", "Lesson info updated successfully");
+            response.put("lesson", lesson);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("Error updating custom lesson info", e);
+            response.put("success", false);
+            response.put("message", "Error: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * Xóa tất cả từ vựng khỏi custom lesson
+     * DELETE /api/custom-vocabulary/lesson/{lessonId}/clear
+     */
+    @DeleteMapping("/lesson/{lessonId}/clear")
+    public ResponseEntity<Map<String, Object>> clearAllVocabularies(
+            @PathVariable Long lessonId,
+            @RequestParam Long userId) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            lessonService.clearAllVocabulariesFromLesson(lessonId, userId);
+            
+            response.put("success", true);
+            response.put("message", "All vocabularies cleared");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("Error clearing vocabularies from custom lesson", e);
             response.put("success", false);
             response.put("message", "Error: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);
